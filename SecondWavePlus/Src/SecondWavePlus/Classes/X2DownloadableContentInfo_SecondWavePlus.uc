@@ -38,12 +38,12 @@ static event OnLoadedSavedGameToStrategy()
 /// </summary>
 static event InstallNewCampaign(XComGameState StartState)
 {
-	local Object Myself;
+//	local Object Myself;
 	
-	Myself=`SCREENSTACK.Screens[0];
+//	Myself=`SCREENSTACK.Screens[0];
 
-	`XEVENTMGR.TriggerEvent('Heartbeat_Lub_1',Myself,Myself,StartState);
-	`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Dub_1',Heartbeat_Dub_1);
+//	`XEVENTMGR.TriggerEvent('Heartbeat_Lub_1',Myself,Myself,StartState);
+//	`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Dub_1',Heartbeat_Dub_1);
 }
 
 function EventListenerReturn Heartbeat_Dub_1(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)

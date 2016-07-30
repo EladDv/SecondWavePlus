@@ -16,14 +16,19 @@ event OnInit(UIScreen Screen)
 	if(Main_HiddenPotential_Actor==none)	Main_HiddenPotential_Actor=Screen.Spawn(class'SecondWave_HiddenPotential_Actor');
 	if(Main_Epigenetics_Actor==none)		Main_Epigenetics_Actor=Screen.Spawn(class'SecondWave_Epigenetics_Actor');
 	if(Main_NotCreatedEqually_Actor==none)	Main_NotCreatedEqually_Actor=Screen.Spawn(class'SecondWave_NotCreatedEqually_Actor');
-	`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_1',Heartbeat_Lub_1);
-	`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_2',Heartbeat_Lub_2);	
+	//`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_1',Heartbeat_Lub_1);
+	//`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_2',Heartbeat_Lub_2);	
+	`XEVENTMGR.RegisterForEvent(Myself,'OnTacticalBeginPlay',OnTacticalBeginPlay);	
 }
 event OnReceiveFocus(UIScreen Screen)
 {
 	
 }
-
+function EventListenerReturn OnTacticalBeginPlay(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
+{
+	CheckForUnitComponents(GameState);	
+	return ELR_NoInterrupt;
+}
 function CheckForUnitComponents(XComGameState NewGameState,optional bool Submit=false)
 {
 	local XComGameState_Unit Unit;
