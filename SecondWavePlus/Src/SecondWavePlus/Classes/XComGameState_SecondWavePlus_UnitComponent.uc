@@ -6,31 +6,29 @@ var protected bool b_HasGot_NotCreatedEqually;
 var protected bool b_HasGot_CommandersChoiceVet;
 var protected bool b_HasGot_HiddenPotential;
 
-Struct HiddenPotentialStatChanges
-{
-	var ECharStatType StatType;
-	var int Change;	
-};
-Struct HiddenPotentialLevelChanges
-{
-	var int Level;	
-	var array<HiddenPotentialStatChanges> StatChanges;
-};
-
-var private array<HiddenPotentialLevelChanges> SavedLevelChanges;
+var private SecondWave_HiddenPotentialStatHolder_Object HiddenPHolder;
 
 public function SetHiddenPotentialLevelChanges(array<HiddenPotentialLevelChanges> LevelChanges)
 {
-	SavedLevelChanges=LevelChanges;
+	HiddenPHolder.SavedLevelChanges=LevelChanges;
 }
 public function array<HiddenPotentialLevelChanges> GetSavedLevelChanges()
 {		
-	return SavedLevelChanges;	
+	return HiddenPHolder.SavedLevelChanges;	
+}
+public function SetHiddenPotentialHolder(SecondWave_HiddenPotentialStatHolder_Object Holder)
+{		
+	HiddenPHolder=holder;
+	HiddenPHolder.SetOwningObjectID(self.ObjectID);
+}
+public function SecondWave_HiddenPotentialStatHolder_Object GetHiddenPotentialHolder()
+{		
+	return HiddenPHolder;	
 }
 public function HiddenPotentialLevelChanges GetSpecificLevelChanges(int i)
 {		
-	if(i!=-1 && i<SavedLevelChanges.Length)
-		return SavedLevelChanges[i];	
+	if(i!=-1 && i<HiddenPHolder.SavedLevelChanges.Length)
+		return HiddenPHolder.SavedLevelChanges[i];	
 }
 
 public function SetHasGot_NotCreatedEqually (bool InBool)
@@ -43,17 +41,22 @@ public function SetHasGot_CommandersChoiceVet (bool InBool)
 }
 public function SetHasGot_HiddenPotential (bool InBool)
 {
-	b_HasGot_HiddenPotential=InBool;	
+	b_HasGot_HiddenPotential=InBool;
+	if(!Inbool)
+	{
+		HiddenPHolder.Destroy();
+		
+	}	
 }
-public function GetHasGot_NotCreatedEqually ()
+public function bool GetHasGot_NotCreatedEqually ()
 {
 	return b_HasGot_NotCreatedEqually;	
 }
-public function GetHasGot_CommandersChoiceVet ()
+public function bool GetHasGot_CommandersChoiceVet ()
 {
 	return b_HasGot_CommandersChoiceVet;	
 }
-public function GetHasGot_HiddenPotential ()
+public function bool GetHasGot_HiddenPotential ()
 {
 	return b_HasGot_HiddenPotential;	
 }

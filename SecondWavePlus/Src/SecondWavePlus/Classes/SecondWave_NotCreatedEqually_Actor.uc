@@ -1,15 +1,9 @@
 // This is an Unreal Script
                            
-class SecondWave_NotCreatedEqually_Object extends Object config(SecondWavePlus_Settings);
+class SecondWave_NotCreatedEqually_Object extends SecondWave_ObjectParent config(SecondWavePlus_Settings);
 
 var config bool bIs_NCE_Activated;
-struct NCE_StatModifiers
-{
-	var ECharStatType StatType;
-	var  int Stat_Range;
-	var  int Stat_Min;
-	var  int Stat_Cost;
-};
+
 var config int TotalPoints_XCom;
 var config int Tolerance_XCom;
 var config array<NCE_StatModifiers> NCEStatModifiers;

@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-Class SecondWave_Epigenetics_Object extends Object config(SecondWavePlus_Settings);
+Class SecondWave_Epigenetics_Object extends SecondWave_ObjectParent config(SecondWavePlus_Settings);
 
 var config bool bIs_Epigenetics_Activated;
 
@@ -28,7 +28,7 @@ function RandomEnemyStats(XComGameState_Unit Unit)
 {
 	local int TotalCost,j,currentStat;
 	local array<int> RandomStats;
-	if(bIs_NCE_Activated&&Unit.IsSoldier()&&Unit.GetTeam()==ETeam_XCom)
+	if(bIs_Epigenetics_Activated&&Unit.GetTeam()==ETeam_Alien)
 	{
 		do
 		{
@@ -95,7 +95,7 @@ function float GetUnitStatModifier(XComGameState_Unit Unit,ECharStatType Stat)
 
 function int GetRandomStat(XComGameState_Unit Unit,NCE_StatModifiers StatMod)
 {
-	local int ReturnStat,TempHolder;
+	local int ReturnStat;
 	do
 	{
 		ReturnStat=	`SYNC_RAND(StatMod.Stat_Range)*GetRandomSign();

@@ -28,13 +28,19 @@
     <Content Include="Config\XComEngine.ini" />
     <Content Include="Config\XComGame.ini" />
     <Content Include="Localization\XComGame.int" />
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_CommandersChoice_Object.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_CommandersChoice_Actor.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_Epigenetics_Object.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_Epigenetics_Actor.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_NotCreatedEqually_Object.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_HiddenPotentialStatHolder_Actor.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_NotCreatedEqually_Actor.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_ActorParent.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_X2SoldierClassTemplate_Helper.uc">
