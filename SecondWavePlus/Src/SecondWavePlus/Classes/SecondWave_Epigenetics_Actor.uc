@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-Class SecondWave_Epigenetics_Object extends SecondWave_ObjectParent config(SecondWavePlus_Settings);
+Class SecondWave_Epigenetics_Actor extends SecondWave_ActorParent config(SecondWavePlus_Settings);
 
 var config bool bIs_Epigenetics_Activated;
 
@@ -99,6 +99,6 @@ function int GetRandomStat(XComGameState_Unit Unit,NCE_StatModifiers StatMod)
 	do
 	{
 		ReturnStat=	`SYNC_RAND(StatMod.Stat_Range)*GetRandomSign();
-	}Until(ReturnStat>=StatMod.Stat_Min);
+	}Until(ReturnStat>=StatMod.Stat_Min && (Unit.GetMaxStat(StatMod.StatType)-Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=0);
 	return Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType));
 }

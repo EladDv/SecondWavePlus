@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class SecondWave_CommandersChoice_Object extends SecondWave_ObjectParent config(SecondWavePlus_Settings);
+class SecondWave_CommandersChoice_Actor extends SecondWave_ActorParent config(SecondWavePlus_Settings);
 
 var config bool bIs_CommandersChoice_Activated;
 var config bool bIs_CommandersChoiceForVets_Activated;
@@ -13,6 +13,15 @@ function ChangeClass (XComGameState_Unit Unit,name ClassName)
 	NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Class");
 	if(!ReverseHiddenPotential(Unit,NewGameState))
 	{
+		OriginalRank=UnrankUnit(Unit,NewGameState);
+		for(i=0;i<OriginalRank;i++)
+		{
+			Unit.RankUpSoldier( NewGameState, ClassName , false);
+		}
+	}
+	else
+	{
+		`XEVENTMGR.TriggerEvent('HiddenPotential_Start',self,Unit,NewGameState);	
 		OriginalRank=UnrankUnit(Unit,NewGameState);
 		for(i=0;i<OriginalRank;i++)
 		{
@@ -32,9 +41,12 @@ function bool ReverseHiddenPotential(XComGameState_Unit Unit,XComGameState NewGa
 	local int i;
 	local HiddenPotentialStatChanges StatChange;
 	local HiddenPotentialLevelChanges SingleLevelChange;
-	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent;
+	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
 
-	SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
+	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
+	if(NewGameState!=none)
+		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
+	
 	if(SW_UnitComponent==none || !SW_UnitComponent.GetHasGot_HiddenPotential())
 		return false;
 	
