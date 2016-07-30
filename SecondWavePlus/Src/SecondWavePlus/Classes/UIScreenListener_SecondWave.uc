@@ -16,8 +16,8 @@ event OnInit(UIScreen Screen)
 	if(Main_HiddenPotential_Actor==none)	Main_HiddenPotential_Actor=Screen.Spawn(class'SecondWave_HiddenPotential_Actor');
 	if(Main_Epigenetics_Actor==none)		Main_Epigenetics_Actor=Screen.Spawn(class'SecondWave_Epigenetics_Actor');
 	if(Main_NotCreatedEqually_Actor==none)	Main_NotCreatedEqually_Actor=Screen.Spawn(class'SecondWave_NotCreatedEqually_Actor');
-	`XEVENTMGR.RegisterForEvent(self,'Heartbeat_Lub_1',Heartbeat_Lub_1);
-	`XEVENTMGR.RegisterForEvent(self,'Heartbeat_Lub_2',Heartbeat_Lub_2);	
+	`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_1',Heartbeat_Lub_1);
+	`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_2',Heartbeat_Lub_2);	
 }
 event OnReceiveFocus(UIScreen Screen)
 {

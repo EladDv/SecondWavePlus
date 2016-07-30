@@ -39,10 +39,10 @@ static event OnLoadedSavedGameToStrategy()
 static event InstallNewCampaign(XComGameState StartState)
 {
 	local Object Myself;
+	
+	Myself=`SCREENSTACK.Screens[0];
 
-	Myself=self;
-
-	`XEVENTMGR.TriggerEvent('Heartbeat_Lub_1',self,self,StartState);
+	`XEVENTMGR.TriggerEvent('Heartbeat_Lub_1',Myself,Myself,StartState);
 	`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Dub_1',Heartbeat_Dub_1);
 }
 
@@ -50,7 +50,7 @@ function EventListenerReturn Heartbeat_Dub_1(Object EventData, Object EventSourc
 {
 	Main_CommandersChoice_Actor=SecondWave_CommandersChoice_Actor(EventData);
 	Main_HiddenPotential_Actor=SecondWave_HiddenPotential_Actor(EventSource);	
-	`XEVENTMGR.TriggerEvent('Heartbeat_Lub_2',self,self,NewGameState);
+	`XEVENTMGR.TriggerEvent('Heartbeat_Lub_2',`SCREENSTACK.Screens[0],`SCREENSTACK.Screens[0],NewGameState);
 	return ELR_NoInterrupt;
 }
 function EventListenerReturn Heartbeat_Dub_2(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)
