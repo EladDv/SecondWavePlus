@@ -18,6 +18,8 @@ event OnInit(UIScreen Screen)
 	if(Main_NotCreatedEqually_Actor==none)	Main_NotCreatedEqually_Actor=Screen.Spawn(class'SecondWave_NotCreatedEqually_Actor');
 	//`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_1',Heartbeat_Lub_1);
 	//`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_2',Heartbeat_Lub_2);	
+	Main_HiddenPotential_Actor.InitListeners();
+	Main_NotCreatedEqually_Actor.InitListeners();
 	`XEVENTMGR.RegisterForEvent(Myself,'OnTacticalBeginPlay',OnTacticalBeginPlay);	
 }
 event OnReceiveFocus(UIScreen Screen)
