@@ -4,14 +4,14 @@ class SecondWave_HiddenPotential_Actor extends SecondWave_ActorParent config(Sec
 
 var config int HiddenPotentialRandomPercentage;
 var config bool bIs_HiddenPotential_Activated;
-
+//var int LastUpdatedAtRank;
 function InitListeners()
 {
 	local Object Myself;
 
 	Myself=self;
-	`XEVENTMGR.RegisterForEvent(Myself,'HiddenPotential_Start',HiddenPotentialStart);
-	`XEVENTMGR.RegisterForEvent(Myself,'HiddenPotential_ApplyUpdate',HiddenPotentialApplyUpdate);
+	`XEVENTMGR.RegisterForEvent(Myself,'HiddenPotential_Start',HiddenPotentialStart, , , ,true);
+	`XEVENTMGR.RegisterForEvent(Myself,'HiddenPotential_ApplyUpdate',HiddenPotentialApplyUpdate, , , ,true);
 }
 function EventListenerReturn HiddenPotentialStart(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)
 {
@@ -23,7 +23,6 @@ function AddHiddenPotentialToUnit(XComGameState_Unit Unit,Optional XComGameState
 {
 	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
 	local XComGameState BackupGameState;
-	local SecondWave_HiddenPotentialStatHolder_Actor NewHolder;
 	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
 	if(NewGameState!=none)
 		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
@@ -32,21 +31,11 @@ function AddHiddenPotentialToUnit(XComGameState_Unit Unit,Optional XComGameState
 		BackupGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Adding Hidden Potential");
 		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(BackupGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
 	}
+	`log("Testing:"@!SW_UnitComponent.GetHasGot_HiddenPotential() @Unit.GetFullName(),,'Second Wave Plus-Hidden Potential');
+
 	if(!SW_UnitComponent.GetHasGot_HiddenPotential())
 	{
-
-		if(SW_UnitComponent.GetHiddenPotentialHolder()==none)
-		{
-			NewHolder=Spawn(class'SecondWave_HiddenPotentialStatHolder_Actor');
-			SW_UnitComponent.SetHiddenPotentialHolder(NewHolder);
-			//SW_UnitComponent.SetHiddenPotentialLevelChanges(CreateHiddenPotentialRanks(Unit));
-			SW_UnitComponent.SetHasGot_HiddenPotential(True);
-		}	
-		else
-		{
-			//SW_UnitComponent.SetHiddenPotentialLevelChanges(CreateHiddenPotentialRanks(Unit));
-			SW_UnitComponent.SetHasGot_HiddenPotential(True);
-		}
+		SW_UnitComponent.SetHasGot_HiddenPotential(True);
 		if(NewGameState==none)
 		{
 			BackupGameState.AddStateObject(SW_UnitComponent);
@@ -56,46 +45,50 @@ function AddHiddenPotentialToUnit(XComGameState_Unit Unit,Optional XComGameState
 				`XCOMHistory.CleanupPendingGameState(BackupGameState);
 		}
 		else
-			NewGameState.AddStateObject(SW_UnitComponent);
-	
+		{
+			`log("Testing 2:" @Unit.GetFullName(),,'Second Wave Plus-Hidden Potential');
+			if(SW_UnitComponent!=none)
+				NewGameState.AddStateObject(SW_UnitComponent);
+			`log("Testing 3:" @Unit.GetFullName(),,'Second Wave Plus-Hidden Potential');
+		}
 	}
 }
 function array<HiddenPotentialLevelChanges> CreateHiddenPotentialRanks(XComGameState_Unit Unit)
 {
 	local array<HiddenPotentialLevelChanges> ToRetArray;
 	local HiddenPotentialStatChanges TempStatChange;
+	local HiddenPotentialLevelChanges TempLevelChange;
 	local array<SoldierClassStatType> SoldierClassProgressions;
 	local SoldierClassStatType SingleSoldierClassProgression;
-	local int i;
-	ToRetArray.Add(Unit.GetSoldierClassTemplate().GetMaxConfiguredRank());
+	local int i,TempLog;
+	
 	for(i=0;i<Unit.GetSoldierClassTemplate().GetMaxConfiguredRank();i++)
 	{
-		ToRetArray[i].Level=i;
+		TempLevelChange.Level=i;
 		SoldierClassProgressions=Unit.GetSoldierClassTemplate().GetStatProgression(i);
 		foreach SoldierClassProgressions(SingleSoldierClassProgression)
 		{
-			TempStatChange.StatType=eStat_MAX;
-			TempStatChange.Change=0;
-			TempStatChange.StatType=SingleSoldierClassProgression.StatType;
-			TempStatChange.Change=GetRandomSign()*`SYNC_RAND(Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage));
-			ToRetArray[i].StatChanges.AddItem(TempStatChange);
+			if(SingleSoldierClassProgression.StatType!=eStat_CombatSims)
+			{
+				TempStatChange.StatType=eStat_MAX;
+				TempStatChange.Change=0;
+				TempStatChange.StatType=SingleSoldierClassProgression.StatType;
+				Templog=Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage/100);
+				`log("Random Limit:"@Templog*-1 @"-"@Templog,,'Second Wave Plus-Hidden Potential');
+				TempStatChange.Change=GetRandomSign()*RAND(Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage/100)+1);
+				TempLevelChange.StatChanges.AddItem(TempStatChange);
+			}
 		}
+		ToRetArray.AddItem(TempLevelChange);
 	}
+	`log("ToRetArray Length"@ToRetArray.Length @Unit.GetSoldierClassTemplate().DisplayName);
 	return ToRetArray;
 }
 
-function int GetRandomSign()
-{
-	local int i;
-	i=`SYNC_RAND(1);
-	if(i==0)
-		i=-1;
-	return i;	
-}
 function EventListenerReturn HiddenPotentialApplyUpdate(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)
 {	
 	if(bIs_HiddenPotential_Activated)
-		HiddenPotentialChangeStats(XComGameState_Unit(EventSource),NewGameState);
+		HiddenPotentialChangeStats(XComGameState_Unit(EventData),NewGameState);
 	return ELR_NoInterrupt;
 }
 
@@ -105,6 +98,8 @@ function HiddenPotentialChangeStats(XComGameState_Unit Unit,Optional XComGameSta
 	local XComGameState BackupGameState;
 	local HiddenPotentialStatChanges StatChange;
 	local HiddenPotentialLevelChanges LevelStatChanges;
+	local array<HiddenPotentialLevelChanges> HiddenPotentialRanks;
+	local int MaxStat,CurrentStat; 
 	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
 	if(NewGameState!=none)
 		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
@@ -113,7 +108,7 @@ function HiddenPotentialChangeStats(XComGameState_Unit Unit,Optional XComGameSta
 		BackupGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Adding Hidden Potential");
 		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(BackupGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
 	}	
-	if(!SW_UnitComponent.GetHasGot_HiddenPotential()||SW_UnitComponent.GetHiddenPotentialHolder()==none)
+	if(!SW_UnitComponent.GetHasGot_HiddenPotential())
 	{
 		AddHiddenPotentialToUnit(Unit,NewGameState);
 		if(newGameState!=none)
@@ -121,16 +116,33 @@ function HiddenPotentialChangeStats(XComGameState_Unit Unit,Optional XComGameSta
 		else
 			SW_UnitComponent=GetUnitComponent(Unit,BackupGameState);
 	}
-	if(Unit.GetRank()==1)
+	if(SW_UnitComponent.LastUpdatedLevel==Unit.GetRank())
+		return;
+
+	`log("Unit Rank:"@Unit.GetRank() @"Unit Class" @Unit.GetSoldierClassTemplate().DisplayName ,,'Second Wave Plus-Hidden Potential');
+	if(Unit.GetRank()==0||!bIs_HiddenPotential_Activated)
+		return;
+
+	else if(Unit.GetRank()==1)
 	{
-		SW_UnitComponent.SetHiddenPotentialLevelChanges(CreateHiddenPotentialRanks(Unit));
+		HiddenPotentialRanks=CreateHiddenPotentialRanks(Unit);
+		SW_UnitComponent.SetHiddenPotentialLevelChanges(HiddenPotentialRanks);
 	}
-	LevelStatChanges=SW_UnitComponent.GetSpecificLevelChanges(Unit.GetRank());
+	if(HiddenPotentialRanks.Length==0)
+		LevelStatChanges=SW_UnitComponent.GetSpecificLevelChanges(Unit.GetRank()-1);
+	else
+		LevelStatChanges=HiddenPotentialRanks[Unit.GetRank()-1];
+	
 	Foreach LevelStatChanges.StatChanges(StatChange)
 	{
-		Unit.SetBaseMaxStat(StatChange.StatType,Unit.GetMaxStat(StatChange.StatType)+StatChange.Change);
-		Unit.SetCurrentStat(StatChange.StatType,Unit.GetCurrentStat(StatChange.StatType)+StatChange.Change);
+		`log("Changing Unit Stats: Max Stat" @StatChange.StatType@":" @Unit.GetMaxStat(StatChange.StatType) @"Change:"@StatChange.Change ,,'Second Wave Plus-Hidden Potential');
+		`log("Changing Unit Stats: Current Stat" @StatChange.StatType@":" @Unit.GetCurrentStat(StatChange.StatType) @"Change:"@StatChange.Change ,,'Second Wave Plus-Hidden Potential');
+		MaxStat=Unit.GetMaxStat(StatChange.StatType);
+		CurrentStat=Unit.GetCurrentStat(StatChange.StatType);
+		Unit.SetBaseMaxStat(StatChange.StatType,MaxStat+StatChange.Change);
+		Unit.SetCurrentStat(StatChange.StatType,CurrentStat+StatChange.Change);
 	}
+	SW_UnitComponent.LastUpdatedLevel=Unit.GetRank();
 	if(NewGameState!=none)
 	{
 		NewGameState.AddStateObject(SW_UnitComponent);

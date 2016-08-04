@@ -28,6 +28,9 @@
     <Content Include="Config\XComEngine.ini" />
     <Content Include="Config\XComGame.ini" />
     <Content Include="Localization\XComGame.int" />
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_AbsolutlyCritical_Actor.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_CommandersChoice_Actor.uc">
       <SubType>Content</SubType>
     </Content>
@@ -40,10 +43,16 @@
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_HiddenPotential_Actor.uc">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_NewEconomy_Actor.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_NotCreatedEqually_Actor.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_ActorParent.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_RedFog_Actor.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_X2SoldierClassTemplate_Helper.uc">
@@ -52,7 +61,16 @@
     <Content Include="Src\SecondWavePlus\Classes\UIScreenListener_SecondWave.uc">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Src\SecondWavePlus\Classes\X2Ability_RedFog_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\SecondWavePlus\Classes\X2DownloadableContentInfo_SecondWavePlus.uc" />
+    <Content Include="Src\SecondWavePlus\Classes\X2Effect_RedFog_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\SecondWavePlus\Classes\XComGameState_Effect_RedFog_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\SecondWavePlus\Classes\XComGameState_SecondWavePlus_UnitComponent.uc">
       <SubType>Content</SubType>
     </Content>

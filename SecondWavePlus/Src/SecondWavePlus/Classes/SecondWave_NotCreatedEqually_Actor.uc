@@ -3,9 +3,12 @@
 class SecondWave_NotCreatedEqually_Actor extends SecondWave_ActorParent config(SecondWavePlus_Settings);
 
 var config bool bIs_NCE_Activated;
+var config bool bIs_NCERobotic_Activated;
+var config bool bIs_ExpensiveTalent_Activated;
 
-var config int TotalPoints_XCom;
-var config int Tolerance_XCom;
+var config float	ExpensiveTalentMultiplier;
+var config int		TotalPoints_XCom;
+var config int		Tolerance_XCom;
 var config array<NCE_StatModifiers> NCEStatModifiers;
 
 function InitListeners()
@@ -14,21 +17,20 @@ function InitListeners()
 
 	Myself=self;
 	`XEVENTMGR.RegisterForEvent(Myself,'NCE_Start',NCEStart);
+	`XEVENTMGR.RegisterForEvent(Myself,'NewCrewNotification',ExpensiveTalentResourceUpdate,ELD_OnStateSubmitted);
 }
 function EventListenerReturn NCEStart(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)
 {
+
 	RandomStats(XComGameState_Unit(EventSource),NewGameState);
 	return ELR_NoInterrupt;
 }
 function int GetRandomStat(int StatRange,int StatMin)
 {
-	local int Sign,ReturnInt;
-	Sign=`SYNC_RAND(1);
-	if(Sign==0)
-	 Sign=-1;
+	local int ReturnInt;
 	do
 	{
-		ReturnInt= `SYNC_RAND(StatRange) * Sign;		
+		ReturnInt= RAND(StatRange+1) * GetRandomSign();		
 	}Until(ReturnInt>=StatMin);
 	return ReturnInt;
 }
@@ -38,7 +40,10 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
 	local XComGameState BackupGameState;
 	local array<int> RandomStats;
-		
+	
+	if(Unit.IsRobotic()||!bIs_NCERobotic_Activated)
+		return;
+	
 	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
 	if(NewGameState!=none)
 		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
@@ -47,7 +52,8 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 		BackupGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit NCE");
 		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(BackupGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
 	}
-	if(bIs_NCE_Activated&&Unit.IsSoldier()&&Unit.GetTeam()==ETeam_XCom && SW_UnitComponent!=none && !SW_UnitComponent.GetHasGot_NotCreatedEqually())
+	`log("Testing:"@bIs_NCE_Activated @Unit.IsSoldier() @SW_UnitComponent!=none @!SW_UnitComponent.GetHasGot_NotCreatedEqually() @Unit.GetFullName(),,'Second Wave Plus-NCE');
+	if(bIs_NCE_Activated&&Unit.IsSoldier() && SW_UnitComponent!=none && !SW_UnitComponent.GetHasGot_NotCreatedEqually())
 	{
 		do
 		{
@@ -64,14 +70,17 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 		`log("New XCom Cost"@TotalCost,,'Second Wave Plus-NCE');
 		for(j=0;j<RandomStats.Length;j++)
 		{
-			Unit.setBaseMaxStat(NCEStatModifiers[j].StatType,Unit.GetMaxStat(NCEStatModifiers[j].StatType)+RandomStats[j]);
-			Unit.setCurrentStat(NCEStatModifiers[j].StatType,Unit.GetMaxStat(NCEStatModifiers[j].StatType)+RandomStats[j]);
-			`log("New XCom Stat"@NCEStatModifiers[j].StatType @Unit.GetMaxStat(NCEStatModifiers[j].StatType),,'Second Wave Plus-NCE');
+			Unit.SetBaseMaxStat(NCEStatModifiers[j].StatType,Unit.GetMaxStat(NCEStatModifiers[j].StatType)+RandomStats[j]);
+			Unit.SetCurrentStat(NCEStatModifiers[j].StatType,Unit.GetMaxStat(NCEStatModifiers[j].StatType));
+			`log("New XCom Stat:"@NCEStatModifiers[j].StatType @"Max:"@Unit.GetMaxStat(NCEStatModifiers[j].StatType) @"Cost:"@(RandomStats[j]*NCEStatModifiers[j].Stat_Cost) ,,'Second Wave Plus-NCE');
 
 		}
 		Unit.setBaseMaxStat(eStat_ArmorChance,100.00f);
 		Unit.setCurrentStat(eStat_ArmorChance,100.00f);
 		SW_UnitComponent.SetHasGot_NotCreatedEqually(True);
+
+		if(bIs_ExpensiveTalent_Activated) SW_UnitComponent.ExtraCostExpensiveTalent= Round(ExpensiveTalentMultiplier*TotalCost);
+	
 		if(NewGameState!=none)
 		{
 			NewGameState.AddStateObject(SW_UnitComponent);
@@ -87,5 +96,34 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 			else
 				`XCOMHistory.CleanupPendingGameState(BackupGameState);
 		}
+	}
+}
+
+function EventListenerReturn ExpensiveTalentResourceUpdate(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)
+{
+	local XComGameState GameState;
+	GameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Doing Hidden Potential");
+	ExpensiveTalentResource(XComGameState_Unit(EventData),NewGameState);
+	`XCOMGAME.GameRuleset.SubmitGameState(GameState);
+
+	return ELR_NoInterrupt;
+}
+
+function ExpensiveTalentResource(XComGameState_Unit Unit,Optional XComGameState NewGameState)
+{
+	local int TotalCost;
+	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
+	if(!Unit.IsSoldier()||!`SCREENSTACK.HasInstanceOf(class'UIRecruitSoldiers'))
+		return;
+
+	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
+	SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
+	if(SW_UnitComponent.SetHasGot_NotCreatedEqually() && bIs_ExpensiveTalent_Activated && SW_UnitComponent.ExtraCostExpensiveTalent!=0)
+	{
+		XComHQ = XComGameState_HeadquartersXCom(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_HeadquartersXCom'));
+		XComHQ = XComGameState_HeadquartersXCom(NewGameState.CreateStateObject(class'XComGameState_HeadquartersXCom', XComHQ.ObjectID));
+		NewGameState.AddStateObject(XComHQ);
+		XComHQ.AddResource(NewGameState, 'Supplies', -SW_UnitComponent.ExtraCostExpensiveTalent);
+		`HQPRES.m_kAvengerHUD.UpdateResources();
 	}
 }

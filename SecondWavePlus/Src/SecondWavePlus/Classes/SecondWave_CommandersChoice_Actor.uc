@@ -14,18 +14,27 @@ function ChangeClass (XComGameState_Unit Unit,name ClassName)
 	if(!ReverseHiddenPotential(Unit,NewGameState))
 	{
 		OriginalRank=UnrankUnit(Unit,NewGameState);
+		if(NewGameState.GetNumGameStateObjects()>0)
+			`XCOMHISTORY.AddGameStateToHistory(NewGameState);
+		else
+			`XCOMHISTORY.CleanupPendingGameState(NewGameState);
+
+		NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Class");
+
 		for(i=0;i<OriginalRank;i++)
 		{
 			Unit.RankUpSoldier( NewGameState, ClassName , false);
+			`XEVENTMGR.TriggerEvent('HiddenPotential_ApplyUpdate',Unit,Unit,NewGameState);	
 		}
 	}
 	else
 	{
-		`XEVENTMGR.TriggerEvent('HiddenPotential_Start',self,Unit,NewGameState);	
+		`XEVENTMGR.TriggerEvent('HiddenPotential_Start',Unit,Unit,NewGameState);	
 		OriginalRank=UnrankUnit(Unit,NewGameState);
 		for(i=0;i<OriginalRank;i++)
 		{
 			Unit.RankUpSoldier( NewGameState, ClassName , false);
+			`XEVENTMGR.TriggerEvent('HiddenPotential_ApplyUpdate',Unit,Unit,NewGameState);	
 		}
 	}
 	History=`XCOMHISTORY;
@@ -38,7 +47,7 @@ function ChangeClass (XComGameState_Unit Unit,name ClassName)
 
 function bool ReverseHiddenPotential(XComGameState_Unit Unit,XComGameState NewGameState )
 {
-	local int i;
+	local int i,MaxStat,CurrentStat;
 	local HiddenPotentialStatChanges StatChange;
 	local HiddenPotentialLevelChanges SingleLevelChange;
 	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
@@ -48,15 +57,19 @@ function bool ReverseHiddenPotential(XComGameState_Unit Unit,XComGameState NewGa
 		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
 	
 	if(SW_UnitComponent==none || !SW_UnitComponent.GetHasGot_HiddenPotential())
+	{
+		`XEVENTMGR.TriggerEvent('HiddenPotential_Start',Unit,Unit,NewGameState);			
 		return false;
-	
+	}
 	for(i=0;i<Unit.GetRank();i++)
 	{
 		SingleLevelChange=SW_UnitComponent.GetSpecificLevelChanges(i);
 		foreach SingleLevelChange.StatChanges(StatChange)
 		{
-			Unit.SetBaseMaxStat(StatChange.StatType,Unit.GetMaxStat(StatChange.StatType)-StatChange.Change);
-			Unit.SetCurrentStat(StatChange.StatType,Unit.GetCurrentStat(StatChange.StatType)-StatChange.Change);
+			MaxStat=Unit.GetMaxStat(StatChange.StatType);
+			CurrentStat=Unit.GetCurrentStat(StatChange.StatType);
+			Unit.SetBaseMaxStat(StatChange.StatType,MaxStat-StatChange.Change);
+			Unit.SetCurrentStat(StatChange.StatType,CurrentStat-StatChange.Change);
 		}
 	}	
 	SW_UnitComponent.SetHasGot_HiddenPotential(false);
@@ -71,7 +84,7 @@ function int UnrankUnit(XComGameState_Unit Unit,XComGameState NewGameState)
 	local array<int> CurrentSoldierStats;
 	local array<SoldierClassStatType> SoldierClassProgressions;
 	local SoldierClassStatType SingleSoldierClassProgression;
-	local int i,SaveRank;
+	local int i,SaveRank,MaxStat,CurrentStat;
 
 	SaveRank=Unit.GetRank();
 	for(i=0;i<Unit.GetRank();i++)
@@ -79,8 +92,10 @@ function int UnrankUnit(XComGameState_Unit Unit,XComGameState NewGameState)
 		SoldierClassProgressions=Unit.GetSoldierClassTemplate().GetStatProgression(i);
 		foreach SoldierClassProgressions(SingleSoldierClassProgression)
 		{
-			Unit.SetBaseMaxStat(SingleSoldierClassProgression.StatType,Unit.GetMaxStat(SingleSoldierClassProgression.StatType)-SingleSoldierClassProgression.StatAmount);
-			Unit.SetCurrentStat(SingleSoldierClassProgression.StatType,Unit.GetCurrentStat(SingleSoldierClassProgression.StatType)-SingleSoldierClassProgression.StatAmount);
+			MaxStat=Unit.GetMaxStat(SingleSoldierClassProgression.StatType);
+			CurrentStat=Unit.GetCurrentStat(SingleSoldierClassProgression.StatType);
+			Unit.SetBaseMaxStat(SingleSoldierClassProgression.StatType,MaxStat-SingleSoldierClassProgression.StatAmount);
+			Unit.SetCurrentStat(SingleSoldierClassProgression.StatType,CurrentStat-SingleSoldierClassProgression.StatAmount);
 		}
 	}
 	for(i = 0; i < eStat_MAX; i++)

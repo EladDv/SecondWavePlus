@@ -3,6 +3,7 @@
 Class SecondWave_Epigenetics_Actor extends SecondWave_ActorParent config(SecondWavePlus_Settings);
 
 var config bool bIs_Epigenetics_Activated;
+var config bool bIs_EpigeneticsRobotics_Activated;
 
 var config array<NCE_StatModifiers> EpigeneticsStatModifiers;
 var config int TotalPoints_Enemy;
@@ -24,10 +25,16 @@ function array<int>GetBaseModifiers()
 	return ToRet;	
 }
 
-function RandomEnemyStats(XComGameState_Unit Unit)
+function bool RandomEnemyStats(XComGameState_Unit Unit)
 {
 	local int TotalCost,j,currentStat;
 	local array<int> RandomStats;
+
+	if(Unit.GetMaxStat(eStat_BackpackSize)==10 ||Unit.GetBaseStat(eStat_BackpackSize)==10 ||Unit.GetCurrentStat(eStat_BackpackSize)==10)
+		return false;
+	if(Unit.IsRobotic()||!bIs_EpigeneticsRobotics_Activated)
+		return false;
+
 	if(bIs_Epigenetics_Activated&&Unit.GetTeam()==ETeam_Alien)
 	{
 		do
@@ -41,28 +48,25 @@ function RandomEnemyStats(XComGameState_Unit Unit)
 				TotalCost+=(currentStat*EpigeneticsStatModifiers[j].Stat_Cost);
 			}
 		}Until(Abs(TotalCost-TotalPoints_Enemy)<=Tolerance_Enemy);
-	}
-	`log("New Enemy Cost"@TotalCost,,'Second Wave Plus-Epigenetics');
+		
+		`log("New Enemy Cost"@TotalCost,,'Second Wave Plus-Epigenetics');
 
-	for(j=0;j<RandomStats.Length;j++)
-	{
-		Unit.setBaseMaxStat(EpigeneticsStatModifiers[j].StatType,Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType)+RandomStats[j]);
-		Unit.setCurrentStat(EpigeneticsStatModifiers[j].StatType,Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType)+RandomStats[j]);
-		`log("New Enemy Stat"@EpigeneticsStatModifiers[j].StatType @Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType),,'Second Wave Plus-Epigenetics');
+		for(j=0;j<RandomStats.Length;j++)
+		{
+			Unit.setBaseMaxStat(EpigeneticsStatModifiers[j].StatType,Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType)+RandomStats[j]);
+			Unit.setCurrentStat(EpigeneticsStatModifiers[j].StatType,Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType));
+			`log("New Enemy Stat"@EpigeneticsStatModifiers[j].StatType @"Max:"@Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType) @"Cost:"@(RandomStats[j]*EpigeneticsStatModifiers[j].Stat_Cost),,'Second Wave Plus-Epigenetics');
+		}
+		Unit.SetBaseMaxStat(eStat_BackpackSize,10);
+		Unit.SetCurrentStat(eStat_BackpackSize,10);
+		Unit.SetBaseMaxStat(eStat_ArmorChance,100.00f);
+		Unit.SetCurrentStat(eStat_ArmorChance,100.00f);
+		return true;
 	}
-	Unit.setBaseMaxStat(eStat_ArmorChance,100.00f);
-	Unit.setCurrentStat(eStat_ArmorChance,100.00f);
+	return false;
 }
 
-function int GetRandomSign()
-{
-	local int i;
-	i=Rand(2);
-	//`log ("got a random"@i);
-	if(i==0)
-		i=-1;
-	return i;
-}
+
 function float GetUnitStatModifier(XComGameState_Unit Unit,ECharStatType Stat)
 {
 	
@@ -81,7 +85,11 @@ function float GetUnitStatModifier(XComGameState_Unit Unit,ECharStatType Stat)
 	else if(Stat==eStat_Dodge)
 		return (Unit.GetBaseStat(Stat)/BaseStats[5]);
 	else if(Stat==eStat_ArmorMitigation)
+	{
+		if(Unit.GetBaseStat(Stat)==0)
+			return 1;
 		return (Unit.GetBaseStat(Stat)/BaseStats[6]);
+	}
 	else if(Stat==eStat_SightRadius)
 		return (Unit.GetBaseStat(Stat)/BaseStats[7]);
 	else if(Stat==eStat_PsiOffense)
@@ -98,7 +106,10 @@ function int GetRandomStat(XComGameState_Unit Unit,NCE_StatModifiers StatMod)
 	local int ReturnStat;
 	do
 	{
-		ReturnStat=	`SYNC_RAND(StatMod.Stat_Range)*GetRandomSign();
-	}Until(ReturnStat>=StatMod.Stat_Min && (Unit.GetMaxStat(StatMod.StatType)-Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=0);
+		ReturnStat=	RAND(StatMod.Stat_Range+1)*GetRandomSign();
+	}Until(ReturnStat>=StatMod.Stat_Min && 
+	(Unit.GetMaxStat(StatMod.StatType)-Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=0 && 
+	(StatMod.StatType!=eStat_Mobility||(Unit.GetMaxStat(StatMod.StatType)-Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=7));
+	
 	return Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType));
 }
