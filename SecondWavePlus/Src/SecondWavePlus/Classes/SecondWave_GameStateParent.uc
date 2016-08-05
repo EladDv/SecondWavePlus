@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class SecondWave_ActorParent extends XComGameState_BaseObject;
+class SecondWave_GameStateParent extends XComGameState_BaseObject;
 
 struct NCE_StatModifiers
 {

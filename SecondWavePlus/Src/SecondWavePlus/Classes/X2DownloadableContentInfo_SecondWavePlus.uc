@@ -19,37 +19,37 @@ class X2DownloadableContentInfo_SecondWavePlus extends X2DownloadableContentInfo
 /// </summary>
 static event OnLoadedSavedGame()
 {
-	local SecondWave_CommandersChoice_Actor		Main_CommandersChoice_Actor;
-	local SecondWave_HiddenPotential_Actor		Main_HiddenPotential_Actor;
-	local SecondWave_Epigenetics_Actor			Main_Epigenetics_Actor;
-	local SecondWave_NotCreatedEqually_Actor	Main_NotCreatedEqually_Actor;
-	local SecondWave_AbsolutlyCritical_Actor	Main_AbsolutlyCritical_Actor;
-	local SecondWave_NewEconomy_Actor			Main_NewEconomy_Actor;
-	local SecondWave_RedFog_Actor				Main_RedFog_Actor;
+	local SecondWave_CommandersChoice_GameState		Main_CommandersChoice_GameState;
+	local SecondWave_HiddenPotential_GameState		Main_HiddenPotential_GameState;
+	local SecondWave_Epigenetics_GameState			Main_Epigenetics_GameState;
+	local SecondWave_NotCreatedEqually_GameState	Main_NotCreatedEqually_GameState;
+	local SecondWave_AbsolutlyCritical_GameState	Main_AbsolutlyCritical_GameState;
+	local SecondWave_NewEconomy_GameState			Main_NewEconomy_GameState;
+	local SecondWave_RedFog_GameState				Main_RedFog_GameState;
 	local XComGameState StartState;
 
 	StartState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Loading Data For New Campagin");
-	Main_CommandersChoice_Actor=SecondWave_CommandersChoice_Actor(StartState.CreateStateObject(class'SecondWave_CommandersChoice_Actor'));
-	Main_HiddenPotential_Actor=SecondWave_HiddenPotential_Actor(StartState.CreateStateObject(class'SecondWave_HiddenPotential_Actor'));
-	Main_Epigenetics_Actor=SecondWave_Epigenetics_Actor(StartState.CreateStateObject(class'SecondWave_Epigenetics_Actor'));
-	Main_NotCreatedEqually_Actor=SecondWave_NotCreatedEqually_Actor(StartState.CreateStateObject(class'SecondWave_NotCreatedEqually_Actor'));
-	Main_AbsolutlyCritical_Actor=SecondWave_AbsolutlyCritical_Actor(StartState.CreateStateObject(class'SecondWave_AbsolutlyCritical_Actor'));
-	Main_RedFog_Actor=SecondWave_RedFog_Actor(StartState.CreateStateObject(class'SecondWave_RedFog_Actor'));
-	Main_NewEconomy_Actor=SecondWave_NewEconomy_Actor(StartState.CreateStateObject(class'SecondWave_NewEconomy_Actor'));
+	Main_CommandersChoice_GameState=SecondWave_CommandersChoice_GameState(StartState.CreateStateObject(class'SecondWave_CommandersChoice_GameState'));
+	Main_HiddenPotential_GameState=SecondWave_HiddenPotential_GameState(StartState.CreateStateObject(class'SecondWave_HiddenPotential_GameState'));
+	Main_Epigenetics_GameState=SecondWave_Epigenetics_GameState(StartState.CreateStateObject(class'SecondWave_Epigenetics_GameState'));
+	Main_NotCreatedEqually_GameState=SecondWave_NotCreatedEqually_GameState(StartState.CreateStateObject(class'SecondWave_NotCreatedEqually_GameState'));
+	Main_AbsolutlyCritical_GameState=SecondWave_AbsolutlyCritical_GameState(StartState.CreateStateObject(class'SecondWave_AbsolutlyCritical_GameState'));
+	Main_RedFog_GameState=SecondWave_RedFog_GameState(StartState.CreateStateObject(class'SecondWave_RedFog_GameState'));
+	Main_NewEconomy_GameState=SecondWave_NewEconomy_GameState(StartState.CreateStateObject(class'SecondWave_NewEconomy_GameState'));
 
-	StartState.AddStateObject(Main_CommandersChoice_Actor);
-	StartState.AddStateObject(Main_HiddenPotential_Actor);
-	StartState.AddStateObject(Main_Epigenetics_Actor);
-	StartState.AddStateObject(Main_NotCreatedEqually_Actor);
-	StartState.AddStateObject(Main_AbsolutlyCritical_Actor);
-	StartState.AddStateObject(Main_NewEconomy_Actor);
-	StartState.AddStateObject(Main_RedFog_Actor);
+	StartState.AddStateObject(Main_CommandersChoice_GameState);
+	StartState.AddStateObject(Main_HiddenPotential_GameState);
+	StartState.AddStateObject(Main_Epigenetics_GameState);
+	StartState.AddStateObject(Main_NotCreatedEqually_GameState);
+	StartState.AddStateObject(Main_AbsolutlyCritical_GameState);
+	StartState.AddStateObject(Main_NewEconomy_GameState);
+	StartState.AddStateObject(Main_RedFog_GameState);
 	`log("Starting New Campaign",,'Second Wave Plus');
-	CheckForUnitComponents(StartState,Main_HiddenPotential_Actor,Main_NotCreatedEqually_Actor,Main_AbsolutlyCritical_Actor);
-	Main_HiddenPotential_Actor.InitListeners();
-	Main_NotCreatedEqually_Actor.InitListeners();	
-	Main_RedFog_Actor.InitListeners();	
-	Main_NewEconomy_Actor.CreateNewEconomy(StartState);
+	CheckForUnitComponents(StartState,Main_HiddenPotential_GameState,Main_NotCreatedEqually_GameState,Main_AbsolutlyCritical_GameState);
+	Main_HiddenPotential_GameState.InitListeners();
+	Main_NotCreatedEqually_GameState.InitListeners();	
+	Main_RedFog_GameState.InitListeners();	
+	Main_NewEconomy_GameState.CreateNewEconomy(StartState);
 	if(StartState.GetNumGameStateObjects()>0)
 		`XCOMHistory.AddGameStateToHistory(StartState);
 	else
@@ -62,39 +62,38 @@ static event OnLoadedSavedGame()
 /// </summary>
 static event InstallNewCampaign(XComGameState StartState)
 {
-	local SecondWave_CommandersChoice_Actor		Main_CommandersChoice_Actor;
-	local SecondWave_HiddenPotential_Actor		Main_HiddenPotential_Actor;
-	local SecondWave_Epigenetics_Actor			Main_Epigenetics_Actor;
-	local SecondWave_NotCreatedEqually_Actor	Main_NotCreatedEqually_Actor;
-	local SecondWave_AbsolutlyCritical_Actor	Main_AbsolutlyCritical_Actor;
-	local SecondWave_NewEconomy_Actor			Main_NewEconomy_Actor;
-	local SecondWave_RedFog_Actor				Main_RedFog_Actor;
+	local SecondWave_CommandersChoice_GameState		Main_CommandersChoice_GameState;
+	local SecondWave_HiddenPotential_GameState		Main_HiddenPotential_GameState;
+	local SecondWave_Epigenetics_GameState			Main_Epigenetics_GameState;
+	local SecondWave_NotCreatedEqually_GameState	Main_NotCreatedEqually_GameState;
+	local SecondWave_AbsolutlyCritical_GameState	Main_AbsolutlyCritical_GameState;
+	local SecondWave_NewEconomy_GameState			Main_NewEconomy_GameState;
+	local SecondWave_RedFog_GameState				Main_RedFog_GameState;
 
-	Main_CommandersChoice_Actor=SecondWave_CommandersChoice_Actor(StartState.CreateStateObject(class'SecondWave_CommandersChoice_Actor'));
-	Main_HiddenPotential_Actor=SecondWave_HiddenPotential_Actor(StartState.CreateStateObject(class'SecondWave_HiddenPotential_Actor'));
-	Main_Epigenetics_Actor=SecondWave_Epigenetics_Actor(StartState.CreateStateObject(class'SecondWave_Epigenetics_Actor'));
-	Main_NotCreatedEqually_Actor=SecondWave_NotCreatedEqually_Actor(StartState.CreateStateObject(class'SecondWave_NotCreatedEqually_Actor'));
-	Main_AbsolutlyCritical_Actor=SecondWave_AbsolutlyCritical_Actor(StartState.CreateStateObject(class'SecondWave_AbsolutlyCritical_Actor'));
-	Main_RedFog_Actor=SecondWave_RedFog_Actor(StartState.CreateStateObject(class'SecondWave_RedFog_Actor'));
-	Main_NewEconomy_Actor=SecondWave_NewEconomy_Actor(StartState.CreateStateObject(class'SecondWave_NewEconomy_Actor'));
+	Main_CommandersChoice_GameState=SecondWave_CommandersChoice_GameState(StartState.CreateStateObject(class'SecondWave_CommandersChoice_GameState'));
+	Main_HiddenPotential_GameState=SecondWave_HiddenPotential_GameState(StartState.CreateStateObject(class'SecondWave_HiddenPotential_GameState'));
+	Main_Epigenetics_GameState=SecondWave_Epigenetics_GameState(StartState.CreateStateObject(class'SecondWave_Epigenetics_GameState'));
+	Main_NotCreatedEqually_GameState=SecondWave_NotCreatedEqually_GameState(StartState.CreateStateObject(class'SecondWave_NotCreatedEqually_GameState'));
+	Main_AbsolutlyCritical_GameState=SecondWave_AbsolutlyCritical_GameState(StartState.CreateStateObject(class'SecondWave_AbsolutlyCritical_GameState'));
+	Main_RedFog_GameState=SecondWave_RedFog_GameState(StartState.CreateStateObject(class'SecondWave_RedFog_GameState'));
+	Main_NewEconomy_GameState=SecondWave_NewEconomy_GameState(StartState.CreateStateObject(class'SecondWave_NewEconomy_GameState'));
 
-	StartState.AddStateObject(Main_CommandersChoice_Actor);
-	StartState.AddStateObject(Main_HiddenPotential_Actor);
-	StartState.AddStateObject(Main_Epigenetics_Actor);
-	StartState.AddStateObject(Main_NotCreatedEqually_Actor);
-	StartState.AddStateObject(Main_AbsolutlyCritical_Actor);
-	StartState.AddStateObject(Main_NewEconomy_Actor);
-	StartState.AddStateObject(Main_RedFog_Actor);
+	StartState.AddStateObject(Main_CommandersChoice_GameState);
+	StartState.AddStateObject(Main_HiddenPotential_GameState);
+	StartState.AddStateObject(Main_Epigenetics_GameState);
+	StartState.AddStateObject(Main_NotCreatedEqually_GameState);
+	StartState.AddStateObject(Main_AbsolutlyCritical_GameState);
+	StartState.AddStateObject(Main_NewEconomy_GameState);
+	StartState.AddStateObject(Main_RedFog_GameState);
 	`log("Starting New Campaign",,'Second Wave Plus');
-	CheckForUnitComponents(StartState,Main_HiddenPotential_Actor,Main_NotCreatedEqually_Actor,Main_AbsolutlyCritical_Actor);
-	Main_HiddenPotential_Actor.InitListeners();
-	Main_NotCreatedEqually_Actor.InitListeners();
-	Main_RedFog_Actor.InitListeners();	
-	Main_NewEconomy_Actor.CreateNewEconomy(StartState);
+	CheckForUnitComponents(StartState,Main_HiddenPotential_GameState,Main_NotCreatedEqually_GameState,Main_AbsolutlyCritical_GameState);
+	Main_HiddenPotential_GameState.InitListeners();
+	Main_NotCreatedEqually_GameState.InitListeners();
+	Main_RedFog_GameState.InitListeners();	
 
 }
 
-static function CheckForUnitComponents(XComGameState NewGameState,SecondWave_HiddenPotential_Actor HidPA,SecondWave_NotCreatedEqually_Actor NCEA,SecondWave_AbsolutlyCritical_Actor ACA,optional bool Submit=false)
+static function CheckForUnitComponents(XComGameState NewGameState,SecondWave_HiddenPotential_GameState HidPA,SecondWave_NotCreatedEqually_GameState NCEA,SecondWave_AbsolutlyCritical_GameState ACA,optional bool Submit=false)
 {
 	local XComGameState_Unit Unit;
 	local XComGameState_SecondWavePlus_UnitComponent UnitComp;

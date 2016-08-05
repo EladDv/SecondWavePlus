@@ -7,6 +7,7 @@
     <SteamPublishID>0</SteamPublishID>
     <AssemblyName>SecondWavePlus</AssemblyName>
     <RootNamespace>SecondWavePlus</RootNamespace>
+    <ProjectGuid>{a7f907ef-1728-46e4-8830-064bb2628e3d}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Config\" />
@@ -28,31 +29,31 @@
     <Content Include="Config\XComEngine.ini" />
     <Content Include="Config\XComGame.ini" />
     <Content Include="Localization\XComGame.int" />
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_AbsolutlyCritical_Actor.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_AbsolutlyCritical_GameState.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_CommandersChoice_Actor.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_CommandersChoice_GameState.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_Epigenetics_Actor.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_Epigenetics_GameState.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_HiddenPotentialStatHolder_Actor.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_HiddenPotential_GameState.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_HiddenPotential_Actor.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_NewEconomy_GameState.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_NewEconomy_Actor.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_NotCreatedEqually_GameState.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_NotCreatedEqually_Actor.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_GameStateParent.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_ActorParent.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_RandomizerActor.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\SecondWavePlus\Classes\SecondWave_RedFog_Actor.uc">
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_RedFog_GameState.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_X2SoldierClassTemplate_Helper.uc">

@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-Class SecondWave_Epigenetics_Actor extends SecondWave_ActorParent config(SecondWavePlus_Settings);
+Class SecondWave_Epigenetics_GameState extends SecondWave_GameStateParent config(SecondWavePlus_Settings);
 
 var config bool bIs_Epigenetics_Activated;
 var config bool bIs_EpigeneticsRobotics_Activated;
@@ -104,12 +104,15 @@ function float GetUnitStatModifier(XComGameState_Unit Unit,ECharStatType Stat)
 function int GetRandomStat(XComGameState_Unit Unit,NCE_StatModifiers StatMod)
 {
 	local int ReturnStat;
+	local SecondWave_RandomizerActor RandActor;
+	
+	RandActor=`SCREENSTACK.GetCurrentScreen().Spawn(class'SecondWave_RandomizerActor',`SCREENSTACK.GetCurrentScreen());
 	do
 	{
-		ReturnStat=	RAND(StatMod.Stat_Range+1)*GetRandomSign();
+		ReturnStat= RandActor.GetRandomStat(StatMod.Stat_Range,StatMod.Stat_Min);//	RAND(StatMod.Stat_Range+1)*GetRandomSign();
 	}Until(ReturnStat>=StatMod.Stat_Min && 
-	(Unit.GetMaxStat(StatMod.StatType)-Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=0 && 
-	(StatMod.StatType!=eStat_Mobility||(Unit.GetMaxStat(StatMod.StatType)-Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=7));
-	
+	(Unit.GetMaxStat(StatMod.StatType)+Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=0 && 
+	(StatMod.StatType!=eStat_Mobility||(Unit.GetMaxStat(StatMod.StatType)+Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=7));
+
 	return Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType));
 }

@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class XComGameState_SecondWavePlus_UnitComponent extends SecondWave_ActorParent;
+class XComGameState_SecondWavePlus_UnitComponent extends SecondWave_GameStateParent;
 
 var protected bool b_HasGot_NotCreatedEqually;
 var protected bool b_HasGot_CommandersChoiceVet;

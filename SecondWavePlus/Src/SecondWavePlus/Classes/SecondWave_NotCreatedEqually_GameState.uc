@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class SecondWave_NotCreatedEqually_Actor extends SecondWave_ActorParent config(SecondWavePlus_Settings);
+class SecondWave_NotCreatedEqually_GameState extends SecondWave_GameStateParent config(SecondWavePlus_Settings);
 
 var config bool bIs_NCE_Activated;
 var config bool bIs_NCERobotic_Activated;
@@ -40,10 +40,11 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
 	local XComGameState BackupGameState;
 	local array<int> RandomStats;
+	local SecondWave_RandomizerActor RandActor;
 	
 	if(Unit.IsRobotic()||!bIs_NCERobotic_Activated)
 		return;
-	
+	RandActor=`SCREENSTACK.GetCurrentScreen().Spawn(class'SecondWave_RandomizerActor',`SCREENSTACK.GetCurrentScreen());	
 	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
 	if(NewGameState!=none)
 		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
@@ -61,7 +62,7 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 			RandomStats.Length=0;
 			for(j=0;j<NCEStatModifiers.Length;j++)
 			{
-				currentStat=GetRandomStat(NCEStatModifiers[j].Stat_Range,NCEStatModifiers[j].Stat_Min);
+				currentStat=RandActor.GetRandomStat(NCEStatModifiers[j].Stat_Range,NCEStatModifiers[j].Stat_Min);
 				RandomStats.AddItem(currentStat);
 				TotalCost+=(currentStat*NCEStatModifiers[j].Stat_Cost);
 			}
@@ -111,14 +112,15 @@ function EventListenerReturn ExpensiveTalentResourceUpdate(Object EventData, Obj
 
 function ExpensiveTalentResource(XComGameState_Unit Unit,Optional XComGameState NewGameState)
 {
-	local int TotalCost;
 	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
+	local XComGameState_HeadquartersXCom XComHQ;
+
 	if(!Unit.IsSoldier()||!`SCREENSTACK.HasInstanceOf(class'UIRecruitSoldiers'))
 		return;
 
 	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
 	SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
-	if(SW_UnitComponent.SetHasGot_NotCreatedEqually() && bIs_ExpensiveTalent_Activated && SW_UnitComponent.ExtraCostExpensiveTalent!=0)
+	if(SW_UnitComponent.GetHasGot_NotCreatedEqually() && bIs_ExpensiveTalent_Activated && SW_UnitComponent.ExtraCostExpensiveTalent!=0)
 	{
 		XComHQ = XComGameState_HeadquartersXCom(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'XComGameState_HeadquartersXCom'));
 		XComHQ = XComGameState_HeadquartersXCom(NewGameState.CreateStateObject(class'XComGameState_HeadquartersXCom', XComHQ.ObjectID));

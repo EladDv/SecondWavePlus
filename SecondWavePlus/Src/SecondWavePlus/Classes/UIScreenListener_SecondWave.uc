@@ -6,17 +6,18 @@ Class UIScreenListener_SecondWave extends UIScreenListener;
 
 event OnInit(UIScreen Screen)
 {
-	local SecondWave_NotCreatedEqually_Actor NCEA;
-	local SecondWave_HiddenPotential_Actor HidPA;
+	local SecondWave_NotCreatedEqually_GameState NCEA;
+	local SecondWave_HiddenPotential_GameState HidPA;
+	local SecondWave_NewEconomy_GameState NECON;
 	local Object Myself;
 	local XComGameState NewGameState;
-	local SecondWave_RedFog_Actor RFA;
+	local SecondWave_RedFog_GameState RFA;
 	Myself=self;
 
 	//`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_1',Heartbeat_Lub_1);
 	//`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_2',Heartbeat_Lub_2);	
-	//Main_HiddenPotential_Actor.InitListeners();
-	//Main_NotCreatedEqually_Actor.InitListeners();
+	//Main_HiddenPotential_GameState.InitListeners();
+	//Main_NotCreatedEqually_GameState.InitListeners();
 	`XEVENTMGR.RegisterForEvent(Myself,'OnTacticalBeginPlay',OnTacticalBeginPlay,ELD_OnStateSubmitted);	
 	`XEVENTMGR.RegisterForEvent(Myself,'OnUnitBeginPlay',OnUnitBeginPlay,ELD_OnStateSubmitted);	
 	if(Screen.IsA('UIArmory_Promotion'))
@@ -27,11 +28,15 @@ event OnInit(UIScreen Screen)
 	}
 	if(Screen.IsA('UIFacilityGrid'))
 	{
-		NCEA=SecondWave_NotCreatedEqually_Actor(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_NotCreatedEqually_Actor'));
-		HidPA=SecondWave_HiddenPotential_Actor(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_HiddenPotential_Actor'));
+		NCEA=SecondWave_NotCreatedEqually_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_NotCreatedEqually_GameState'));
+		HidPA=SecondWave_HiddenPotential_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_HiddenPotential_GameState'));
+		NECON=SecondWave_NewEconomy_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_NewEconomy_GameState'));
 		AddNotCreatedEqually();
 		HidPA.InitListeners();
 		NCEA.InitListeners();	
+		NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("New Economy Update");
+		NECON.CreateNewEconomy(NewGameState);
+		SubmitGameState(NewGameState);
 	}
 	else if(Screen.IsA('UIRecruitSoldiers'))
 	{
@@ -39,7 +44,7 @@ event OnInit(UIScreen Screen)
 	}
 	if(`TACTICALRULES == none || !`TACTICALRULES.TacticalGameIsInPlay())	
 	{
-		RFA=SecondWave_RedFog_Actor(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_RedFog_Actor'));
+		RFA=SecondWave_RedFog_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_RedFog_GameState'));
 		RFA.InitListeners();
 	}
 
@@ -47,10 +52,11 @@ event OnInit(UIScreen Screen)
 event OnReceiveFocus(UIScreen Screen)
 {
 	local XComGameState NewGameState;
-	local SecondWave_RedFog_Actor RFA;
+	local SecondWave_RedFog_GameState RFA;
+	local SecondWave_NewEconomy_GameState NECON;
 	if(`TACTICALRULES == none || !`TACTICALRULES.TacticalGameIsInPlay())	
 	{
-		RFA=SecondWave_RedFog_Actor(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_RedFog_Actor'));
+		RFA=SecondWave_RedFog_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_RedFog_GameState'));
 		RFA.InitListeners();
 	}
 	if(Screen.IsA('UIArmory_Promotion'))
@@ -60,8 +66,13 @@ event OnReceiveFocus(UIScreen Screen)
 			SubmitGameState(NewGameState);	
 	}
 	else if(Screen.IsA('UIFacilityGrid'))
+	{
+		NECON=SecondWave_NewEconomy_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_NewEconomy_GameState'));
 		AddNotCreatedEqually();
-
+		NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("New Economy Update");
+		NECON.CreateNewEconomy(NewGameState);
+		SubmitGameState(NewGameState);
+	}
 	else if(Screen.IsA('UIRecruitSoldiers'))
 	{
 		UIRecruitSoldiers(Screen).List.OnSelectionChanged=OnRecruitChangedOverride;
@@ -69,9 +80,9 @@ event OnReceiveFocus(UIScreen Screen)
 }
 function AddNotCreatedEqually()
 {
-	local SecondWave_NotCreatedEqually_Actor NCEA;
-	local SecondWave_HiddenPotential_Actor HidPA;
-	local SecondWave_AbsolutlyCritical_Actor ACA;
+	local SecondWave_NotCreatedEqually_GameState NCEA;
+	local SecondWave_HiddenPotential_GameState HidPA;
+	local SecondWave_AbsolutlyCritical_GameState ACA;
 	local XComGameStateHistory history;
 	local XComGameState_Unit Unit;
 	local XComGameState_SecondWavePlus_UnitComponent UnitComp;
@@ -79,9 +90,9 @@ function AddNotCreatedEqually()
 
 
 	history=`XCOMHISTORY;
-	NCEA=SecondWave_NotCreatedEqually_Actor(history.GetSingleGameStateObjectForClass(class'SecondWave_NotCreatedEqually_Actor'));
-	HidPA=SecondWave_HiddenPotential_Actor(history.GetSingleGameStateObjectForClass(class'SecondWave_HiddenPotential_Actor'));
-	ACA=SecondWave_AbsolutlyCritical_Actor(history.GetSingleGameStateObjectForClass(class'SecondWave_AbsolutlyCritical_Actor'));
+	NCEA=SecondWave_NotCreatedEqually_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_NotCreatedEqually_GameState'));
+	HidPA=SecondWave_HiddenPotential_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_HiddenPotential_GameState'));
+	ACA=SecondWave_AbsolutlyCritical_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_AbsolutlyCritical_GameState'));
 	
 	foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_Unit',Unit)
 	{
@@ -127,14 +138,14 @@ function AddNotCreatedEqually()
 }
 function EventListenerReturn OnUnitBeginPlay(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
 {
-	local SecondWave_Epigenetics_Actor Epig;
-	local SecondWave_AbsolutlyCritical_Actor ACA;
+	local SecondWave_Epigenetics_GameState Epig;
+	local SecondWave_AbsolutlyCritical_GameState ACA;
 	local XComGameState_Unit Unit;
 	local XComGameState NewGameState;
 	NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Units");
 	Unit=XComGameState_Unit(EventData);
-	Epig=SecondWave_Epigenetics_Actor(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_Epigenetics_Actor'));
-	ACA=SecondWave_AbsolutlyCritical_Actor(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_AbsolutlyCritical_Actor'));
+	Epig=SecondWave_Epigenetics_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_Epigenetics_GameState'));
+	ACA=SecondWave_AbsolutlyCritical_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_AbsolutlyCritical_GameState'));
 	if((Unit.IsAdvent()||Unit.IsAlien())&&!Unit.IsSoldier())
 	{
 		if(Epig.RandomEnemyStats(Unit))
@@ -148,11 +159,11 @@ function EventListenerReturn OnUnitBeginPlay(Object EventData, Object EventSourc
 }
 function EventListenerReturn OnTacticalBeginPlay(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
 {
-	local SecondWave_NotCreatedEqually_Actor NCEA;
-	local SecondWave_HiddenPotential_Actor HidPA;
-	local SecondWave_Epigenetics_Actor Epig;
-	local SecondWave_AbsolutlyCritical_Actor ACA;
-	local SecondWave_RedFog_Actor RFA;
+	local SecondWave_NotCreatedEqually_GameState NCEA;
+	local SecondWave_HiddenPotential_GameState HidPA;
+	local SecondWave_Epigenetics_GameState Epig;
+	local SecondWave_AbsolutlyCritical_GameState ACA;
+	local SecondWave_RedFog_GameState RFA;
 	local XComGameStateHistory history;
 	local XComGameState_Unit Unit;
 	local XComGameState_SecondWavePlus_UnitComponent UnitComp;
@@ -160,11 +171,11 @@ function EventListenerReturn OnTacticalBeginPlay(Object EventData, Object EventS
 	NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Units");
 
 	history=`XCOMHISTORY;
-	NCEA=SecondWave_NotCreatedEqually_Actor(history.GetSingleGameStateObjectForClass(class'SecondWave_NotCreatedEqually_Actor'));
-	HidPA=SecondWave_HiddenPotential_Actor(history.GetSingleGameStateObjectForClass(class'SecondWave_HiddenPotential_Actor'));
-	Epig=SecondWave_Epigenetics_Actor(history.GetSingleGameStateObjectForClass(class'SecondWave_Epigenetics_Actor'));
-	ACA=SecondWave_AbsolutlyCritical_Actor(history.GetSingleGameStateObjectForClass(class'SecondWave_AbsolutlyCritical_Actor'));
-	RFA=SecondWave_RedFog_Actor(history.GetSingleGameStateObjectForClass(class'SecondWave_RedFog_Actor'));
+	NCEA=SecondWave_NotCreatedEqually_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_NotCreatedEqually_GameState'));
+	HidPA=SecondWave_HiddenPotential_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_HiddenPotential_GameState'));
+	Epig=SecondWave_Epigenetics_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_Epigenetics_GameState'));
+	ACA=SecondWave_AbsolutlyCritical_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_AbsolutlyCritical_GameState'));
+	RFA=SecondWave_RedFog_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_RedFog_GameState'));
 	RFA.InitListeners();
 
 	foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_Unit',Unit)
@@ -245,12 +256,32 @@ simulated function OnRecruitChangedOverride(UIList kList, int itemIndex )
 	StaffPicture = CapMan.GetStoredImage(UnitRef, name(ImageString));
 	if(StaffPicture == none)
 	{
-		DeferredSoldierPictureListIndex = itemIndex;
-		ClearTimer(nameof(RSScreen.DeferredUpdateSoldierPicture));
-		SetTimer(0.1f, false, nameof(RSScreen.DeferredUpdateSoldierPicture));
+		RSScreen.DeferredSoldierPictureListIndex = itemIndex;
+		RSScreen.ClearTimer(nameof(DeferredUpdateSoldierPicture_Listener));
+		RSScreen.SetTimer(0.1f, false, nameof(DeferredUpdateSoldierPicture_Listener));
 	}	
 	else
 	{
 		RSScreen.AS_SetPicture("img:///"$PathName(StaffPicture));
 	}
+}
+
+function DeferredUpdateSoldierPicture_Listener()
+{	
+	local StateObjectReference UnitRef;
+	local XComGameState_Unit Recruit;
+	local XComPhotographer_Strategy Photo;	
+	local UIRecruitSoldiers RSScreen;
+
+	RSScreen=UIRecruitSoldiers(`SCREENSTACK.GetFirstInstanceOf(class'UIRecruitSoldiers'));
+	if(RSScreen==none) return;
+
+	Recruit = RSScreen.m_arrRecruits[RSScreen.DeferredSoldierPictureListIndex];
+	UnitRef = Recruit.GetReference();
+		
+	Photo = `GAME.StrategyPhotographer;	
+	if (!Photo.HasPendingHeadshot(UnitRef, RSScreen.OnSoldierHeadCaptureFinished))
+	{
+		Photo.AddHeadshotRequest(UnitRef, 'UIPawnLocation_ArmoryPhoto', 'SoldierPicture_Head_Armory', 512, 512, RSScreen.OnSoldierHeadCaptureFinished,, false, true);
+	}	
 }

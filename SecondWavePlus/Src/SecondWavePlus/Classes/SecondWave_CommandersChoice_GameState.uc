@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class SecondWave_CommandersChoice_Actor extends SecondWave_ActorParent config(SecondWavePlus_Settings);
+class SecondWave_CommandersChoice_GameState extends SecondWave_GameStateParent config(SecondWavePlus_Settings);
 
 var config bool bIs_CommandersChoice_Activated;
 var config bool bIs_CommandersChoiceForVets_Activated;

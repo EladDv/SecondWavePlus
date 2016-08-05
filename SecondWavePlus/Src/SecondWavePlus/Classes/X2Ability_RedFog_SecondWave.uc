@@ -38,7 +38,7 @@ static function X2AbilityTemplate CreateRedFogAbility() // Thanks (again) to LWS
 	RedFogEffect.VisualizationFn = RedFogVisualization;
 	RedFogEffect.EffectTickedVisualizationFn = RedFogVisualization;
 	RedFogEffect.EffectRemovedVisualizationFn = RedFogVisualization;
-
+	
 	Template.AddTargetEffect(RedFogEffect);
 
 	Template.BuildNewGameStateFn = TypicalAbility_BuildGameState;

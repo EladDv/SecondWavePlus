@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class SecondWave_RedFog_Actor extends SecondWave_ActorParent;
+class SecondWave_RedFog_GameState extends SecondWave_GameStateParent;
 
 function InitListeners()
 {
@@ -29,8 +29,21 @@ static function OnNewGameState_HealthWatcher(XComGameState GameState) //Thank yo
 		if(HPChangedUnit.IsUnitAffectedByEffectName(class'X2Effect_RedFog_SecondWave'.default.EffectName))
 		{
 			`log("RED FOG ACTIVE! FOUND UNIT AFFECTED"@HPChangedUnit.GetFullName(),,'Second Wave Plus-Red Fog');
-			RedFogEffect = HPChangedUnit.GetUnitAffectedByEffectState(class'X2Effect_RedFog_SecondWave'.default.EffectName);
-			if(RedFogEffect != none)
+			RedFogEffect = HPChangedUnit.GetUnitAffectedByEffectState(class'X2Effect_RedFogStats_SecondWave'.default.EffectName);
+			RedFogEffect.RemoveEffect(NewGameState,NewGameState,true);
+		}
+		if(NewGameState.GetNumGameStateObjects() > 0)
+			`TACTICALRULES.SubmitGameState(NewGameState);
+		else
+			`XCOMHISTORY.CleanupPendingGameState(NewGameState);
+
+		NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Update RedFog OnNewGameState_HealthWatcher");
+		`EVENTMGR.TriggerEvent('CreateNewRedFogReduction',HPChangedUnit,HPChangedUnit,NewGameState);
+		if(NewGameState.GetNumGameStateObjects() > 0)
+			`TACTICALRULES.SubmitGameState(NewGameState);
+		else
+			`XCOMHISTORY.CleanupPendingGameState(NewGameState);
+		if(RedFogEffect != none)
 			{
 				`log("RED FOG ACTIVE! FOUND GAME STATE",,'Second Wave Plus-Red Fog');
 				RFEComponent = XComGameState_Effect_RedFog_SecondWave(RedFogEffect.FindComponentObject(class'XComGameState_Effect_RedFog_SecondWave'));
@@ -49,6 +62,21 @@ static function OnNewGameState_HealthWatcher(XComGameState GameState) //Thank yo
 		`TACTICALRULES.SubmitGameState(NewGameState);
 	else
 		`XCOMHISTORY.CleanupPendingGameState(NewGameState);
+
+	NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Update RedFog OnNewGameState_HealthWatcher");
+	RedFogEffect = HPChangedUnit.GetUnitAffectedByEffectState(class'X2Effect_RedFog_SecondWave'.default.EffectName);
+	if(RedFogEffect != none)
+	{
+		UpdatedUnit = XComGameState_Unit(NewGameState.CreateStateObject(class'XComGameState_Unit', HPChangedUnit.ObjectID));
+		NewGameState.AddStateObject(RedFogEffect);
+		NewGameState.AddStateObject(UpdatedUnit);
+		UpdatedUnit.ApplyEffectToStats(RedFogEffect,NewGameState);
+	}
+	if(NewGameState.GetNumGameStateObjects() > 0)
+		`TACTICALRULES.SubmitGameState(NewGameState);
+	else
+		`XCOMHISTORY.CleanupPendingGameState(NewGameState);
+				
 }
 
 static function GetHPChangedObjectList(XComGameState NewGameState, out array<XComGameState_Unit> OutHPChangedObjects) //Thank you Amineri and LWS! 

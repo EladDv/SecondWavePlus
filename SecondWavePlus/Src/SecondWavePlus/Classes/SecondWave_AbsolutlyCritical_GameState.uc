@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class SecondWave_AbsolutlyCritical_Actor extends SecondWave_ActorParent  config(SecondWavePlus_Settings);
+class SecondWave_AbsolutlyCritical_GameState extends SecondWave_GameStateParent  config(SecondWavePlus_Settings);
 
 var config bool bIs_AbsolutlyCritical_Activated;
 var config bool bIs_AbsolutlyCritical_XCOM_Activated;
@@ -24,7 +24,7 @@ function AddAbsolutlyCriticalToUnit(XComGameState_Unit Unit,Optional XComGameSta
 {
 	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
 	local XComGameState BackupGameState;
-	if((Unit.GetTeam==eTeam_XCom&&!bIs_AbsolutlyCritical_XCOM_Activated)||(Unit.GetTeam==eTeam_Alien&&!bIs_AbsolutlyCritical_Aliens_Activated))
+	if((Unit.GetTeam()==eTeam_XCom&&!bIs_AbsolutlyCritical_XCOM_Activated)||(Unit.GetTeam()==eTeam_Alien&&!bIs_AbsolutlyCritical_Aliens_Activated))
 		return;
 
 	if(Unit.IsSoldier()&&bIs_AbsolutlyCritical_Activated)

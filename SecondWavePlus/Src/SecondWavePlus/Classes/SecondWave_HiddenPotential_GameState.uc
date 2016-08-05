@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class SecondWave_HiddenPotential_Actor extends SecondWave_ActorParent config(SecondWavePlus_Settings);
+class SecondWave_HiddenPotential_GameState extends SecondWave_GameStateParent config(SecondWavePlus_Settings);
 
 var config int HiddenPotentialRandomPercentage;
 var config bool bIs_HiddenPotential_Activated;
@@ -60,8 +60,10 @@ function array<HiddenPotentialLevelChanges> CreateHiddenPotentialRanks(XComGameS
 	local HiddenPotentialLevelChanges TempLevelChange;
 	local array<SoldierClassStatType> SoldierClassProgressions;
 	local SoldierClassStatType SingleSoldierClassProgression;
+	local SecondWave_RandomizerActor RandActor;
 	local int i,TempLog;
 	
+	RandActor=`SCREENSTACK.GetCurrentScreen().Spawn(class'SecondWave_RandomizerActor',`SCREENSTACK.GetCurrentScreen());
 	for(i=0;i<Unit.GetSoldierClassTemplate().GetMaxConfiguredRank();i++)
 	{
 		TempLevelChange.Level=i;
@@ -75,7 +77,7 @@ function array<HiddenPotentialLevelChanges> CreateHiddenPotentialRanks(XComGameS
 				TempStatChange.StatType=SingleSoldierClassProgression.StatType;
 				Templog=Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage/100);
 				`log("Random Limit:"@Templog*-1 @"-"@Templog,,'Second Wave Plus-Hidden Potential');
-				TempStatChange.Change=GetRandomSign()*RAND(Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage/100)+1);
+				TempStatChange.Change=GetRandomSign()*RandActor.GetRandomStat(Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage/100)+1,,true);
 				TempLevelChange.StatChanges.AddItem(TempStatChange);
 			}
 		}

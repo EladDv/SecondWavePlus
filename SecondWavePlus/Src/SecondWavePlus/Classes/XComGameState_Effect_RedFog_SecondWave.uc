@@ -1,6 +1,6 @@
 // This is an Unreal Script
                            
-class XComGameState_Effect_RedFog_SecondWave extends SecondWave_ActorParent config(SecondWavePlus_Settings);
+class XComGameState_Effect_RedFog_SecondWave extends SecondWave_GameStateParent config(SecondWavePlus_Settings);
 
 var config bool b_IsRedFogActive;
 var config bool b_IsRedFogActive_Aliens;
@@ -9,6 +9,16 @@ var config bool b_IsRedFogActive_Robotics;
 var config bool b_UseGaussianEquasion;
 
 var config array<RedFogFormulatType> FTypeRF;
+var array<RedFogFormulatType> FTypeRF_Persistent;
+var StateObjectReference MyUnitRef;
+struct PreChangeStats
+{
+	var ECharStatType StatType;	
+	var float MaxStat;
+	var float CurrentStat;	
+	var float BaseStat;	
+};
+var array<PreChangeStats> PCSRF;
 
 function XComGameState_Effect_RedFog_SecondWave InitRFComponent()
 {
@@ -27,6 +37,7 @@ function XComGameState_Effect GetOwner(optional XComGameState GameState)
 
 function RegisterForRFEvents(optional XComGameState_Unit TargetUnit)
 {
+	local RedFogFormulatType FTypeLocal;
 	local Object SelfObj;
 	
 	SelfObj=self;
@@ -34,6 +45,18 @@ function RegisterForRFEvents(optional XComGameState_Unit TargetUnit)
 		return;
 	`XEVENTMGR.RegisterForEvent(SelfObj,'RedFogActivated',UpdateRedFog,ELD_OnStateSubmitted,,TargetUnit,true);
 	`XEVENTMGR.RegisterForEvent(SelfObj,'RedFogCleanup',RedFogCleanup,ELD_OnStateSubmitted,,TargetUnit,true);
+	foreach FTypeRF(FTypeLocal)
+	{
+		if(FTypeLocal.StatType==eStat_Offense||FTypeLocal.StatType==eStat_PsiOffense)
+			return;
+
+		PCSRF.Add(1);
+		PCSRF[PCSRF.length-1].StatType=FTypeLocal.StatType;
+		PCSRF[PCSRF.length-1].BaseStat=TargetUnit.GetBaseStat(FTypeLocal.StatType);
+		PCSRF[PCSRF.length-1].MaxStat=TargetUnit.GetMaxStat(FTypeLocal.StatType);
+		PCSRF[PCSRF.length-1].CurrentStat=TargetUnit.GetCurrentStat(FTypeLocal.StatType);
+	}
+	MyUnitRef=TargetUnit.GetReference();
 }
 function EventListenerReturn RedFogCleanup(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
 {
@@ -41,8 +64,9 @@ function EventListenerReturn RedFogCleanup(Object EventData, Object EventSource,
     local XComGameState NewGameState;
 	local XComGameState_Effect_RedFog_SecondWave SWRFEffectObject;
     local XComGameState_Effect EffectState;
+	local PreChangeStats LocalPCS;
 	local Object SelfObj;
-		
+	local XComGameState_Unit MyUnit;
 	SelfObj=self;
 	History=`XCOMHISTORY;
 	`XEVENTMGR.UnRegisterFromAllEvents(SelfObj);
@@ -58,12 +82,23 @@ function EventListenerReturn RedFogCleanup(Object EventData, Object EventSource,
 	}
 	else
 		NewGameState.RemoveStateObject(SWRFEffectObject.ObjectID);
-		
+	
+	MyUnit=XComGameState_Unit(NewGameState.CreateStateObject(class'XComGameState_Unit',MyUnitRef.ObjectID));
+	foreach PCSRF(LocalPCS)
+	{
+		if(LocalPCS.CurrentStat==MyUnit.GetMaxStat(LocalPCS.StatType))
+			MyUnit.SetCurrentStat(LocalPCS.StatType,LocalPCS.CurrentStat);
+		else
+			MyUnit.SetCurrentStat(LocalPCS.StatType,MyUnit.GetMaxStat(LocalPCS.StatType));
+	
+	}
+	NewGameState.AddStateObject(MyUnit);
 	if (NewGameState.GetNumGameStateObjects() > 0)
         `GAMERULES.SubmitGameState(NewGameState);
     else
         History.CleanupPendingGameState(NewGameState);
 
+	
 	return ELR_NoInterrupt;
 }
 function EventListenerReturn UpdateRedFog(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
@@ -143,7 +178,11 @@ function GetRedFogStatChanges(XComGameState_Unit Unit, XComGameState GameState,O
 		NewChange.StatType=FTypeLocal.StatType;
 		NewChange.StatAmount=GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP));
 		NewChange.ModOp=MODOP_Multiplication;
-		StatChanges.AddItem(NewChange);
+		`log("Unit: "@Unit.GetFullName() @FTypeLocal.StatType $": " $Unit.GetMaxStat(FTypeLocal.StatType)*(1+GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP))));
+
+		if(FTypeLocal.StatType==eStat_Offense || FTypeLocal.StatType==eStat_PsiOffense)StatChanges.AddItem(NewChange);
+		else
+			Unit.SetCurrentStat(FTypeLocal.StatType,Unit.GetMaxStat(FTypeLocal.StatType)*(1+GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP))));
 	}
 	OwningEffect.StatChanges = StatChanges;
 	Unit.ApplyEffectToStats(OwningEffect, GameState);
