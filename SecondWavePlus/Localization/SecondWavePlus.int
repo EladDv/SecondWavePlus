@@ -1,0 +1,9 @@
+;Place localized text in this file
+
+[UIScreen_SecondWaveOptions]
+OptionNames[0]="Not Created Equally"
+
+UIRangesNames[0]="Stat Type"
+UIRangesNames[1]="Options Range"
+UIRangesNames[2]="Minimal Stat"
+UIRangesNames[3]="Stat Cost"

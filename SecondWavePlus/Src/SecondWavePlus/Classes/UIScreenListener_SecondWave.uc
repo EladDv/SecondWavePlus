@@ -12,6 +12,7 @@ event OnInit(UIScreen Screen)
 	local Object Myself;
 	local XComGameState NewGameState;
 	local SecondWave_RedFog_GameState RFA;
+	local UIScreen_SecondWaveOptions UISWOScreen;
 	Myself=self;
 
 	//`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_1',Heartbeat_Lub_1);
@@ -20,6 +21,15 @@ event OnInit(UIScreen Screen)
 	//Main_NotCreatedEqually_GameState.InitListeners();
 	`XEVENTMGR.RegisterForEvent(Myself,'OnTacticalBeginPlay',OnTacticalBeginPlay,ELD_OnStateSubmitted);	
 	`XEVENTMGR.RegisterForEvent(Myself,'OnUnitBeginPlay',OnUnitBeginPlay,ELD_OnStateSubmitted);	
+	if(Screen.IsA('UIShellDifficulty'))
+	{
+		UISWOScreen=Screen.Spawn(Class'UIScreen_SecondWaveOptions',`SCREENSTACK.GetCurrentScreen());
+		UISWOScreen.CreateScreen();
+		UISWOScreen.SetupSettings();
+		UISWOScreen.Show();
+		`SCREENSTACK.Push(UISWOScreen);
+	}
+
 	if(Screen.IsA('UIArmory_Promotion'))
 	{
 			NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Doing Hidden Potential");
@@ -168,9 +178,26 @@ function EventListenerReturn OnTacticalBeginPlay(Object EventData, Object EventS
 	local XComGameState_Unit Unit;
 	local XComGameState_SecondWavePlus_UnitComponent UnitComp;
 	local XComGameState NewGameState;
-	NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Units");
+	local SecondWave_CampaignSettings SWCampSettings;
+	local XComGameState_CampaignSettings CampSettings;
+
+	NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Get Campaign Settings");
 
 	history=`XCOMHISTORY;
+	CampSettings=XComGameState_CampaignSettings(history.GetSingleGameStateObjectForClass(Class'XComGameState_CampaignSettings'));
+	if(CampSettings!=none)
+	{
+		SWCampSettings=SecondWave_CampaignSettings(CampSettings.FindComponentObject(class'SecondWave_CampaignSettings'));
+		if(SWCampSettings==none)
+		{
+			SWCampSettings= SecondWave_CampaignSettings(NewGameState.CreateStateObject(Class'SecondWave_CampaignSettings'));
+			SWCampSettings.InitSettings();
+			NewGameState.AddStateObject(SWCampSettings);
+		}
+	}
+	SubmitGameState(NewGameState);
+	
+	NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Units");
 	NCEA=SecondWave_NotCreatedEqually_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_NotCreatedEqually_GameState'));
 	HidPA=SecondWave_HiddenPotential_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_HiddenPotential_GameState'));
 	Epig=SecondWave_Epigenetics_GameState(history.GetSingleGameStateObjectForClass(class'SecondWave_Epigenetics_GameState'));
@@ -223,6 +250,7 @@ function SubmitGameState(XComGameState NewGameState)
 simulated function OnRecruitChangedOverride(UIList kList, int itemIndex )
 {
 	local XGParamTag LocTag;
+	local SecondWave_NotCreatedEqually_GameState NCEA;
 	local UIRecruitSoldiers RSScreen;
 	local StateObjectReference UnitRef;
 	local XComGameState_Unit Recruit;
@@ -230,23 +258,26 @@ simulated function OnRecruitChangedOverride(UIList kList, int itemIndex )
 	local X2ImageCaptureManager CapMan;		
 	local Texture2D StaffPicture;
 	local string ImageString;
-	
+	local string CostString;
+	local string m_STR_Supplies;
 	if(itemIndex == INDEX_NONE) return;
 
 	RSScreen=UIRecruitSoldiers(`SCREENSTACK.GetFirstInstanceOf(class'UIRecruitSoldiers'));
 	if(RSScreen==none) return;
 
+	NCEA=SecondWave_NotCreatedEqually_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_NotCreatedEqually_GameState'));
+
 	Recruit = RSScreen.m_arrRecruits[itemIndex];
 	UnitRef = Recruit.GetReference();
 	ResistanceHQ = class'UIUtilities_Strategy'.static.GetResistanceHQ();
 
+	m_STR_Supplies=RSScreen.m_strSupplies;
 	LocTag = XGParamTag(`XEXPANDCONTEXT.FindTag("XGParam"));
-	if(XComGameState_SecondWavePlus_UnitComponent(Recruit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'))!=none)
-		LocTag.IntValue0 = ResistanceHQ.GetRecruitSupplyCost()+XComGameState_SecondWavePlus_UnitComponent(Recruit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent')).ExtraCostExpensiveTalent;
-	else
-		LocTag.IntValue0 = ResistanceHQ.GetRecruitSupplyCost();
-
-	RSScreen.AS_SetCost(RSScreen.m_strCost, `XEXPAND.ExpandString(RSScreen.m_strSupplies));
+	Recruit= XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(UnitRef.ObjectID));
+	CostString = String(ResistanceHQ.GetRecruitSupplyCost()+NCEA.GetExpensiveTalentCost(Recruit));
+	LocTag.IntValue0=ResistanceHQ.GetRecruitSupplyCost()+NCEA.GetExpensiveTalentCost(Recruit);
+	//`log("LocTag.IntValue0:"@LocTag.IntValue0 @CostString @NCEA.GetExpensiveTalentCost(Recruit));
+	RSScreen.AS_SetCost(RSScreen.m_strCost,CostString $Split(m_STR_Supplies,">",true));
 	RSScreen.AS_SetDescription(Recruit.GetBackground());
 	RSScreen.AS_SetTime(RSScreen.m_strTime, RSScreen.m_strInstant);
 	RSScreen.AS_SetPicture(); // hide picture until character portrait is loaded
@@ -257,31 +288,11 @@ simulated function OnRecruitChangedOverride(UIList kList, int itemIndex )
 	if(StaffPicture == none)
 	{
 		RSScreen.DeferredSoldierPictureListIndex = itemIndex;
-		RSScreen.ClearTimer(nameof(DeferredUpdateSoldierPicture_Listener));
-		RSScreen.SetTimer(0.1f, false, nameof(DeferredUpdateSoldierPicture_Listener));
+		RSScreen.ClearTimer('DeferredUpdateSoldierPicture');
+		RSScreen.SetTimer(0.1f, false, 'DeferredUpdateSoldierPicture');
 	}	
 	else
 	{
 		RSScreen.AS_SetPicture("img:///"$PathName(StaffPicture));
 	}
-}
-
-function DeferredUpdateSoldierPicture_Listener()
-{	
-	local StateObjectReference UnitRef;
-	local XComGameState_Unit Recruit;
-	local XComPhotographer_Strategy Photo;	
-	local UIRecruitSoldiers RSScreen;
-
-	RSScreen=UIRecruitSoldiers(`SCREENSTACK.GetFirstInstanceOf(class'UIRecruitSoldiers'));
-	if(RSScreen==none) return;
-
-	Recruit = RSScreen.m_arrRecruits[RSScreen.DeferredSoldierPictureListIndex];
-	UnitRef = Recruit.GetReference();
-		
-	Photo = `GAME.StrategyPhotographer;	
-	if (!Photo.HasPendingHeadshot(UnitRef, RSScreen.OnSoldierHeadCaptureFinished))
-	{
-		Photo.AddHeadshotRequest(UnitRef, 'UIPawnLocation_ArmoryPhoto', 'SoldierPicture_Head_Armory', 512, 512, RSScreen.OnSoldierHeadCaptureFinished,, false, true);
-	}	
 }

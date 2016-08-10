@@ -28,6 +28,17 @@ struct HiddenPotentialLevelChanges
 	var array<HiddenPotentialStatChanges> StatChanges;
 };
 
+struct UIRanges
+{
+	var ECharStatType StatType;	
+	var float Range;	
+	var float Min;	
+	var float Cost;	
+	var int	RangeSteps;
+	var int	MinSteps;
+	var int	CostSteps;
+};
+
 function int GetRandomSign()
 {
 	local int i;

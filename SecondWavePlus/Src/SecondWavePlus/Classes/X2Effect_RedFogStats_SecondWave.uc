@@ -10,7 +10,7 @@ var config bool b_UseGaussianEquasion;
 
 var config array<RedFogFormulatType> FTypeRF;
 
-simulated function AddRedFogStatChange(ECharStatType StatType,XComGameState_Unit Unit, optional EStatModOp InModOp=MODOP_Multiplication )
+simulated function AddRedFogStatChange(ECharStatType StatType,XComGameState_Unit Unit, optional EStatModOp InModOp=MODOP_Addition)
 {
 	local StatChange NewChange;
 	local int Found;
@@ -20,7 +20,7 @@ simulated function AddRedFogStatChange(ECharStatType StatType,XComGameState_Unit
 		return;
 
 	NewChange.StatType = StatType;
-	NewChange.StatAmount = GetStatMultiplier(FTypeRF[Found],Unit.GetCurrentStat(eStat_HP),Unit.GetMaxStat(eStat_HP));
+	NewChange.StatAmount =Unit.GetMaxStat(StatType)*GetStatMultiplier(FTypeRF[Found],Unit.GetCurrentStat(eStat_HP),Unit.GetMaxStat(eStat_HP));
 	NewChange.ModOp = InModOp;
 
 	m_aStatChanges.AddItem(NewChange);
@@ -29,6 +29,7 @@ simulated function AddRedFogStatChange(ECharStatType StatType,XComGameState_Unit
 simulated protected function OnEffectAdded(const out EffectAppliedData ApplyEffectParameters, XComGameState_BaseObject kNewTargetState, XComGameState NewGameState, XComGameState_Effect NewEffectState)
 {
 	local RedFogFormulatType LocalRF;
+	m_aStatChanges.Length=0;
 	foreach FTypeRF(LocalRF)
 	{	
 		AddRedFogStatChange(LocalRF.StatType,XComGameState_Unit(kNewTargetState));
@@ -43,7 +44,7 @@ function float GetStatMultiplier(RedFogFormulatType FTypeLocal, float CurrentHP 
 	local float FinalAnswer;
 
 	if(CurrentHP>=MaxHP)
-		return 1.0f;
+		return 0.0f;
 	if(CurrentHP<=0)
 		return 0.000001f;
 

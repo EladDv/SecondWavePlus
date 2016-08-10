@@ -23,6 +23,9 @@
     <Content Include="Config\XComSecondWavePlus_Settings.ini">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Localization\SecondWavePlus.int">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="ReadMe.txt" />
     <Content Include="ModPreview.jpg" />
     <Content Include="Config\XComEditor.ini" />
@@ -30,6 +33,9 @@
     <Content Include="Config\XComGame.ini" />
     <Content Include="Localization\XComGame.int" />
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_AbsolutlyCritical_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_CampaignSettings.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_CommandersChoice_GameState.uc">
@@ -56,16 +62,25 @@
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_RedFog_GameState.uc">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_UIListItem_NCEStatChangesUpdate.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_X2SoldierClassTemplate_Helper.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\UIScreenListener_SecondWave.uc">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Src\SecondWavePlus\Classes\UIScreen_SecondWaveOptions.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\SecondWavePlus\Classes\X2Ability_RedFog_SecondWave.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\X2DownloadableContentInfo_SecondWavePlus.uc" />
+    <Content Include="Src\SecondWavePlus\Classes\X2Effect_RedFogStats_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\SecondWavePlus\Classes\X2Effect_RedFog_SecondWave.uc">
       <SubType>Content</SubType>
     </Content>

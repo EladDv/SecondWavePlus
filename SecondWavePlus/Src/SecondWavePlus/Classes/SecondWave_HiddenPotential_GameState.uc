@@ -77,7 +77,7 @@ function array<HiddenPotentialLevelChanges> CreateHiddenPotentialRanks(XComGameS
 				TempStatChange.StatType=SingleSoldierClassProgression.StatType;
 				Templog=Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage/100);
 				`log("Random Limit:"@Templog*-1 @"-"@Templog,,'Second Wave Plus-Hidden Potential');
-				TempStatChange.Change=GetRandomSign()*RandActor.GetRandomStat(Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage/100)+1,,true);
+				TempStatChange.Change=RandActor.GetRandomStat(Round(SingleSoldierClassProgression.StatAmount*HiddenPotentialRandomPercentage/100),,true);
 				TempLevelChange.StatChanges.AddItem(TempStatChange);
 			}
 		}

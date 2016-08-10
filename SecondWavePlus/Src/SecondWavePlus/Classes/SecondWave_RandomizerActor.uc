@@ -37,12 +37,12 @@ function int GetRandomStat(int IStatRange,Optional int IStatMin=0,Optional bool 
 function RandomSign()
 {
 	local int i;
-	i=Rand(10);
-	//`log ("got a random"@i);
-	if(i%2==0)
-		i=-1;
-	else 
-		i=1;
+	local float Fi;
+	Fi=RandRange(-1.0,1);
+	if(Fi==0.0)
+		Sign=1;
+
+	i=Round(Fi/Abs(Fi));
 	Sign=i;
 	`log("Random Sign:"@Sign,,'Second Wave Plus-Randomizer');
 }
@@ -52,8 +52,7 @@ function RandomStat()
 	local int ReturnInt;
 	do
 	{
-		RandomSign();
-		ReturnInt= RAND(StatRange+1) * Sign;		
+		ReturnInt= Round(RandRange(-float(StatRange),float(StatRange)));		
 	}Until(ReturnInt>=StatMin);
 	StatInt=ReturnInt;
 	`log("Random Stat Not Symmetric:"@StatInt,,'Second Wave Plus-Randomizer');
@@ -61,7 +60,7 @@ function RandomStat()
 
 function RandomMultiplier()
 {
-	local float ToRet,RandomF;
+	local float RandomF;
 	RandomF=RandRange(0.0,MultiplierPercentage/100.0);
 	RandomSign();
 	Multiplier=RandomF*float(Sign);
@@ -72,8 +71,7 @@ function RandomMultiplier()
 function RandomStatSymmetric()
 {
 	local int ReturnInt;
-	RandomSign();
-	ReturnInt= RAND(StatRange+1) *Sign;
+	ReturnInt=Round(RandRange(-float(StatRange),float(StatRange)));
 	StatInt=ReturnInt;
 	`log("Random Stat Symmetric:"@StatInt,,'Second Wave Plus-Randomizer');
 }

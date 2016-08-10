@@ -19,9 +19,11 @@ function InitListeners()
 	`XEVENTMGR.RegisterForEvent(Myself,'NCE_Start',NCEStart);
 	`XEVENTMGR.RegisterForEvent(Myself,'NewCrewNotification',ExpensiveTalentResourceUpdate,ELD_OnStateSubmitted);
 }
+
+
+
 function EventListenerReturn NCEStart(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)
 {
-
 	RandomStats(XComGameState_Unit(EventSource),NewGameState);
 	return ELR_NoInterrupt;
 }
@@ -80,8 +82,11 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 		Unit.setCurrentStat(eStat_ArmorChance,100.00f);
 		SW_UnitComponent.SetHasGot_NotCreatedEqually(True);
 
-		if(bIs_ExpensiveTalent_Activated) SW_UnitComponent.ExtraCostExpensiveTalent= Round(ExpensiveTalentMultiplier*TotalCost);
-	
+		if(bIs_ExpensiveTalent_Activated)
+		{
+			SW_UnitComponent.ExtraCostExpensiveTalent= Round(ExpensiveTalentMultiplier*TotalCost);
+			`log("Expensive Talent Cost:"@Round(ExpensiveTalentMultiplier*TotalCost),,'Second Wave Plus-Expensive Talent');
+		}
 		if(NewGameState!=none)
 		{
 			NewGameState.AddStateObject(SW_UnitComponent);
@@ -128,4 +133,20 @@ function ExpensiveTalentResource(XComGameState_Unit Unit,Optional XComGameState 
 		XComHQ.AddResource(NewGameState, 'Supplies', -SW_UnitComponent.ExtraCostExpensiveTalent);
 		`HQPRES.m_kAvengerHUD.UpdateResources();
 	}
+}
+function int GetExpensiveTalentCost(XComGameState_Unit Unit)
+{
+	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
+	local XComGameState GameState;
+	GameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Doing Hidden Potential");
+
+	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
+	SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(GameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
+	//`log("OldUnitComp:"@OldUnitComp.ExtraCostExpensiveTalent @",SW_UnitComponent:"@SW_UnitComponent.ExtraCostExpensiveTalent,,'Second Wave Plus-Expensive Talent');
+	if(GameState.GetNumGameStateObjects()>0)
+		`XCOMHistory.AddGameStateToHistory(GameState);
+	else
+		`XCOMHistory.CleanupPendingGameState(GameState);
+
+	return SW_UnitComponent.ExtraCostExpensiveTalent;
 }

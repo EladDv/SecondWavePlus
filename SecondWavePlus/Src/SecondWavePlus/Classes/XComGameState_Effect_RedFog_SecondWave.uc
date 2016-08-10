@@ -2,15 +2,15 @@
                            
 class XComGameState_Effect_RedFog_SecondWave extends SecondWave_GameStateParent config(SecondWavePlus_Settings);
 
-var config bool b_IsRedFogActive;
-var config bool b_IsRedFogActive_Aliens;
-var config bool b_IsRedFogActive_XCom;
-var config bool b_IsRedFogActive_Robotics;
-var config bool b_UseGaussianEquasion;
+var bool b_IsRedFogActive;
+var bool b_IsRedFogActive_Aliens;
+var bool b_IsRedFogActive_XCom;
+var bool b_IsRedFogActive_Robotics;
+var bool b_UseGaussianEquasion;
 
-var config array<RedFogFormulatType> FTypeRF;
-var array<RedFogFormulatType> FTypeRF_Persistent;
+var array<RedFogFormulatType> FTypeRF;
 var StateObjectReference MyUnitRef;
+
 struct PreChangeStats
 {
 	var ECharStatType StatType;	
@@ -22,6 +22,15 @@ var array<PreChangeStats> PCSRF;
 
 function XComGameState_Effect_RedFog_SecondWave InitRFComponent()
 {
+	local SecondWave_RedFog_GameState	Main_RedFog_GameState;
+
+	Main_RedFog_GameState=SecondWave_RedFog_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_RedFog_GameState'));
+	b_IsRedFogActive=Main_RedFog_GameState.b_IsRedFogActive;
+	b_IsRedFogActive_Aliens=Main_RedFog_GameState.b_IsRedFogActive_Aliens;
+	b_IsRedFogActive_XCom=Main_RedFog_GameState.b_IsRedFogActive_XCom;
+	b_IsRedFogActive_Robotics=Main_RedFog_GameState.b_IsRedFogActive_Robotics;
+	b_UseGaussianEquasion=Main_RedFog_GameState.b_UseGaussianEquasion;
+	FTypeRF=Main_RedFog_GameState.FTypeRF;
 	return self;
 }
 
@@ -176,8 +185,8 @@ function GetRedFogStatChanges(XComGameState_Unit Unit, XComGameState GameState,O
 	foreach FTypeRF(FTypeLocal)
 	{
 		NewChange.StatType=FTypeLocal.StatType;
-		NewChange.StatAmount=GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP));
-		NewChange.ModOp=MODOP_Multiplication;
+		NewChange.StatAmount=Unit.GetMaxStat(FTypeLocal.StatType)*GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP));
+		NewChange.ModOp=MODOP_Addition;
 		`log("Unit: "@Unit.GetFullName() @FTypeLocal.StatType $": " $Unit.GetMaxStat(FTypeLocal.StatType)*(1+GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP))));
 
 		if(FTypeLocal.StatType==eStat_Offense || FTypeLocal.StatType==eStat_PsiOffense)StatChanges.AddItem(NewChange);
