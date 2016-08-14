@@ -2,7 +2,7 @@
                            
 Class UIScreenListener_SecondWave extends UIScreenListener;
 
-
+var UIScreen_SecondWaveOptions UISWOScreen;
 
 event OnInit(UIScreen Screen)
 {
@@ -12,7 +12,6 @@ event OnInit(UIScreen Screen)
 	local Object Myself;
 	local XComGameState NewGameState;
 	local SecondWave_RedFog_GameState RFA;
-	local UIScreen_SecondWaveOptions UISWOScreen;
 	Myself=self;
 
 	//`XEVENTMGR.RegisterForEvent(Myself,'Heartbeat_Lub_1',Heartbeat_Lub_1);
@@ -24,9 +23,6 @@ event OnInit(UIScreen Screen)
 	if(Screen.IsA('UIShellDifficulty'))
 	{
 		UISWOScreen=Screen.Spawn(Class'UIScreen_SecondWaveOptions',`SCREENSTACK.GetCurrentScreen());
-		UISWOScreen.CreateScreen();
-		UISWOScreen.SetupSettings();
-		UISWOScreen.Show();
 		`SCREENSTACK.Push(UISWOScreen);
 	}
 

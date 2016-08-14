@@ -7,3 +7,5 @@ UIRangesNames[0]="Stat Type"
 UIRangesNames[1]="Options Range"
 UIRangesNames[2]="Minimal Stat"
 UIRangesNames[3]="Stat Cost"
+
+SWPOptionsHeader="Second Wave Plus Options Screen"

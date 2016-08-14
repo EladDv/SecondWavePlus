@@ -1,12 +1,13 @@
 // This is an Unreal Script
                            
-class UIScreen_SecondWaveOptions extends UIScreen dependson(SecondWave_GameStateParent) Config(SecondWavePlus_Settings);
+class UIScreen_SecondWaveOptions extends UISimpleScreen dependson(SecondWave_GameStateParent) Config(SecondWavePlus_Settings);
 
 var int m_iCurrentSelection;
 
 var UIBGBox BGB;
-
+var UIX2PanelHeader Header;
 var UIList List;
+
 var array<UIMechaListItem> ClickedItems;
 
 var config array<NCE_StatModifiers> SavedNCEItems;
@@ -14,10 +15,15 @@ var config array<NCE_StatModifiers> SavedEpigeneticsItems;
 
 var localized array<string> OptionNames;
 var localized array<string> UIRangesNames;
+var localized string		SWPOptionsHeader;
 
 var config array<UIRanges> StatChangesRanges;
 
 var array<UIMechaListItem> CreatedUIMLI;
+var UIListItemString MyStringItem;
+
+var array<SecondWave_UIListItem_NCEStatChangesUpdate> NCEItems;
+var array<SecondWave_UIListItem_NCEStatChangesUpdate> EpigeneticsItems;
 
 simulated function InitScreen(XComPlayerController InitController, UIMovie InitMovie, optional name InitName)
 {
@@ -27,34 +33,27 @@ simulated function InitScreen(XComPlayerController InitController, UIMovie InitM
 
 simulated function CreateScreen()
 {
-	BGB=Spawn(class'UIBGBox',self).InitBG('BackgroundBGBox',,,1440,900,eUIState_Normal);
-	BGB.OriginCenter();
-	BGB.AnchorCenter();
-
-	List = Spawn(class'UIList', self);
-	List.InitList('ItemList', , , 750, 300);
-	List.OnItemClicked = OnChildClicked;
-	List.CreateItemContainer();
-	List.OnSelectionChanged = SetSelected; 
-	List.OnItemDoubleClicked = OnChildClicked;
-
-	//List.OriginCenter();
-	//List.AnchorCenter();	
-
-	//SavedNCEItems=GetExistingNCESM();
-	//SavedEpigeneticsItems=GetExistingNCESM(true);
-	List.RealizeList();	
-	`log("Setup Create Screen");
+	local TRect rBG,rList,rHeader;
+	
+	rBG=self.MakeRect(0,0,1920,1080);
+	rList=self.MakeRect(90,53,1808,1017);
+	rHeader=self.MakeRect(2,2,1916,50);
+	BGB=self.AddBG(rBG,eUIState_Normal);
+	Header=AddHeader(rHeader,SWPOptionsHeader,MakeLinearColor(0, 1, 1, 0.85));
+	Header.OriginTopCenter();
+	Header.AnchorTopCenter();
+	List=AddList(rList," ",OnChildClicked);
+	List.ItemPadding=0;
+	SetupSettings();
 }
 
 simulated public function SetupSettings()
 {
-
-	CreatedUIMLI.AddItem(UIMechaListItem(List.CreateItem(class'UIMechaListItem')));
-	//CreatedUIMLI.AddItem(Spawn(Class'UIMechaListItem',Screen));
-	CreatedUIMLI[CreatedUIMLI.Length-1].InitListItem();
-	CreatedUIMLI[CreatedUIMLI.Length-1].SetPosition(300, 100);
-	CreatedUIMLI[CreatedUIMLI.Length-1].UpdateDataCheckbox("Stat"@OptionNames[0],"",true,UpdateNCE);
+	List.ClearItems();
+	CreatedUIMLI.Length=0;
+	CreatedUIMLI.AddItem(UIMechaListItem(List.CreateItem(class'UIMechaListItem')).InitListItem());
+	//CreatedUIMLI[CreatedUIMLI.Length]=Spawn(Class'UIMechaListItem', List.itemContainer).InitListItem();
+	CreatedUIMLI[CreatedUIMLI.Length-1].UpdateDataCheckbox(OptionNames[0],"",true,UpdateNCE);
 	CreatedUIMLI[CreatedUIMLI.Length-1].Checkbox.SetReadOnly(false);
 	CreatedUIMLI[CreatedUIMLI.Length-1].SetDisabled(false);
 	CreatedUIMLI[CreatedUIMLI.Length-1].AnimateIn(0);
@@ -62,6 +61,7 @@ simulated public function SetupSettings()
 		UpdateNCE(CreatedUIMLI[CreatedUIMLI.Length-1].Checkbox);
 	List.RealizeList();	
 	List.RealizeItems(0);
+	List.AnimateIn(0.1f);
 	List.Show();	
 	`log("Setup Settings");
 }
@@ -134,28 +134,56 @@ function array<NCE_StatModifiers> GetExistingNCESM(optional bool ReturnEpigeneti
 
 simulated function UpdateNCE(UICheckbox CheckBox)
 {
-	local SecondWave_UIListItem_NCEStatChangesUpdate StatChangesDescription;
 	local NCE_StatModifiers SCSingle;
 	local array<ECharStatType> CompatibleStats;
 	local int Found;	
+	local array<UIPanel> SCUArray;
 
 	UpdateCompatibleStatTypes(CompatibleStats);
 	if(!CheckBox.bChecked)
 	{
-		List.ClearItems();
-		SetupSettings();
-		List.RealizeList();		
+		self.GetChildrenOfType(Class'SecondWave_UIListItem_NCEStatChangesUpdate',SCUArray);
+		for(found=0;found<SCUArray.Length;found++)
+		{
+			CheckBox.RemoveChild(SCUArray[found]);
+			SCUArray[found].Removed();
+		}
+		SCUArray.Length=0;
+		//List.ClearItems();
+		//SetupSettings();
+		//List.RealizeList();		
 	}
+	`log("SavedNCEItems Length"@SavedNCEItems.Length);	
 	foreach SavedNCEItems(SCSingle)
 	{
 		Found=StatChangesRanges.Find('StatType',SCSingle.StatType);
 		if(Found==-1)
 			continue;
 		
-		StatChangesDescription=SecondWave_UIListItem_NCEStatChangesUpdate(List.CreateItem(class'SecondWave_UIListItem_NCEStatChangesUpdate'));
-		StatChangesDescription.InitSCUpdateItem(SCSingle,StatChangesRanges[Found],CompatibleStats,UIRangesNames,OnRemovedClickedNCE,OnSavedClickedNCE);	
+		NCEItems.AddItem(Spawn(class'SecondWave_UIListItem_NCEStatChangesUpdate',self));
+		NCEItems[NCEItems.Length-1].InitSCUpdateItem(List,SCSingle,StatChangesRanges[Found],CompatibleStats,UIRangesNames,OnRemovedClickedNCE,OnSavedClickedNCE,OnOpenListItems);	
 		`log("Setup Saved Settings");
 	}
+	//CheckBox.SetChecked(saveSettings);
+}
+
+simulated function OnOpenListItems(SecondWave_UIListItem_NCEStatChangesUpdate SCU)
+{
+	SCU.OpenEditList(List);
+}
+function OnRemovedClickedNCE(SecondWave_UIListItem_NCEStatChangesUpdate SCU)
+{
+	SavedNCEItems.RemoveItem(SCU.SCSingle);
+	SetupSettings();
+}
+function OnSavedClickedNCE(SecondWave_UIListItem_NCEStatChangesUpdate SCU)
+{
+	local int i;
+	i=SavedNCEItems.find('StatType',SCU.SCSingle.StatType);
+	if(i!=-1)
+		SavedNCEItems[i]=SCU.TempSM;
+
+	SCU.SCSingle=SCU.TempSM;
 }
 simulated function UpdateNCE_Robotics(UICheckbox CheckBox)
 {
@@ -190,21 +218,14 @@ simulated function UpdateNewEconomy(UICheckbox CheckBox)
 	
 }
 
-simulated public function OnChildClicked(UIList ContainerList, int ItemIndex){}
+simulated public function OnChildClicked(UIList ContainerList, int ItemIndex)
+{
+	if(UIMechaListItem(List.GetItem(itemIndex))!=none)
+		UpdateNCE(UIMechaListItem(List.GetItem(itemIndex)).Checkbox);
+}
 
 simulated function SetSelected(UIList ContainerList, int ItemIndex)
 {
 	m_iCurrentSelection = ItemIndex;
 }
 
-function OnRemovedClickedNCE(SecondWave_UIListItem_NCEStatChangesUpdate SCU)
-{
-	SavedNCEItems.RemoveItem(SCU.SCSingle);
-}
-function OnSavedClickedNCE(SecondWave_UIListItem_NCEStatChangesUpdate SCU)
-{
-	local int i;
-	i=SavedNCEItems.find('StatType',SCU.SCSingle.StatType);
-	if(i!=-1)
-		SavedNCEItems[i]=SCU.TempSM;
-}
