@@ -22,7 +22,7 @@ function float GetRandomMultiplier(float Perc)
 	return Multiplier;
 }
 
-function int GetRandomStat(int IStatRange,Optional int IStatMin=0,Optional bool Symmetric=false)
+function int GetRandomStat(float IStatRange,Optional float IStatMin=0,Optional bool Symmetric=false)
 {
 	StatMin=IStatMin;
 	StatRange=IStatRange;
@@ -52,7 +52,7 @@ function RandomStat()
 	local int ReturnInt;
 	do
 	{
-		ReturnInt= Round(RandRange(-float(StatRange),float(StatRange)));		
+		ReturnInt= Round(RandRange(-(StatRange),(StatRange)));		
 	}Until(ReturnInt>=StatMin);
 	StatInt=ReturnInt;
 	`log("Random Stat Not Symmetric:"@StatInt,,'Second Wave Plus-Randomizer');
@@ -63,7 +63,7 @@ function RandomMultiplier()
 	local float RandomF;
 	RandomF=RandRange(0.0,MultiplierPercentage/100.0);
 	RandomSign();
-	Multiplier=RandomF*float(Sign);
+	Multiplier=RandomF*(Sign);
 	`log("Random Multiplier:"@Multiplier,,'Second Wave Plus-Randomizer');
 
 }
@@ -71,7 +71,7 @@ function RandomMultiplier()
 function RandomStatSymmetric()
 {
 	local int ReturnInt;
-	ReturnInt=Round(RandRange(-float(StatRange),float(StatRange)));
+	ReturnInt=Round(RandRange(-(StatRange),(StatRange)));
 	StatInt=ReturnInt;
 	`log("Random Stat Symmetric:"@StatInt,,'Second Wave Plus-Randomizer');
 }

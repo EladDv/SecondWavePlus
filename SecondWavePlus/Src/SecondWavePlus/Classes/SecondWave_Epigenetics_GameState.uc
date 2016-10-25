@@ -6,13 +6,17 @@ var config bool bIs_Epigenetics_Activated;
 var config bool bIs_EpigeneticsRobotics_Activated;
 
 var config array<NCE_StatModifiers> EpigeneticsStatModifiers;
+var config array<Epigenetics_BaseStats> EpigeneticsBaseStats;
+var config array<string> ExcludeUnitFromFillingHP; 
 var config int TotalPoints_Enemy;
 var config int Tolerance_Enemy;
 
-function array<int>GetBaseModifiers()
+function int GetBaseModifiers(ECharStatType StatT)
 {
-	local array<int> ToRet;
-	ToRet.AddItem(8);	
+	local int ReturnStat;
+		
+	ReturnStat= EpigeneticsBaseStats[EpigeneticsBaseStats.Find('StatType',StatT)].Stat;
+/*	ToRet.AddItem(8);	
 	ToRet.AddItem(80);	
 	ToRet.AddItem(10);	
 	ToRet.AddItem(12);	
@@ -21,13 +25,13 @@ function array<int>GetBaseModifiers()
 	ToRet.AddItem(1);	
 	ToRet.AddItem(27);	
 	ToRet.AddItem(120);
-	ToRet.AddItem(33);
-	return ToRet;	
+	ToRet.AddItem(33);*/
+	return ReturnStat;	
 }
 
 function bool RandomEnemyStats(XComGameState_Unit Unit)
 {
-	local int TotalCost,j,currentStat;
+	local int TotalCost,j,currentStat,CodexHPSave;
 	local array<int> RandomStats;
 
 	if(Unit.GetMaxStat(eStat_BackpackSize)==10 ||Unit.GetBaseStat(eStat_BackpackSize)==10 ||Unit.GetCurrentStat(eStat_BackpackSize)==10)
@@ -35,7 +39,7 @@ function bool RandomEnemyStats(XComGameState_Unit Unit)
 	if(Unit.IsRobotic()||!bIs_EpigeneticsRobotics_Activated)
 		return false;
 
-	if(bIs_Epigenetics_Activated&&Unit.GetTeam()==ETeam_Alien)
+	if(bIs_Epigenetics_Activated&&Unit.GetTeam()==ETeam_Alien) // Fix Alien Rulers, or just disable
 	{
 		do
 		{
@@ -53,8 +57,15 @@ function bool RandomEnemyStats(XComGameState_Unit Unit)
 
 		for(j=0;j<RandomStats.Length;j++)
 		{
+			CodexHPSave=-1;
+			if((EpigeneticsStatModifiers[j].StatType==eStat_HP) &&(Unit.GetMyTemplate().CharacterGroupName =='Cyberus'||ExcludeUnitFromFillingHP.Find(string(Unit.GetMyTemplateName()))!=-1))
+				CodexHPSave=Unit.GetCurrentStat(eStat_HP);
+
 			Unit.setBaseMaxStat(EpigeneticsStatModifiers[j].StatType,Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType)+RandomStats[j]);
-			Unit.setCurrentStat(EpigeneticsStatModifiers[j].StatType,Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType));
+			
+			if(CodexHPSave==-1)
+				Unit.setCurrentStat(EpigeneticsStatModifiers[j].StatType,Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType));
+			
 			`log("New Enemy Stat"@EpigeneticsStatModifiers[j].StatType @"Max:"@Unit.GetMaxStat(EpigeneticsStatModifiers[j].StatType) @"Cost:"@(RandomStats[j]*EpigeneticsStatModifiers[j].Stat_Cost),,'Second Wave Plus-Epigenetics');
 		}
 		Unit.SetBaseMaxStat(eStat_BackpackSize,10);
@@ -69,36 +80,9 @@ function bool RandomEnemyStats(XComGameState_Unit Unit)
 
 function float GetUnitStatModifier(XComGameState_Unit Unit,ECharStatType Stat)
 {
-	
-	local array<int> BaseStats;
-	BaseStats=GetBaseModifiers();
-	if(Stat==eStat_HP)
-		return (Unit.GetBaseStat(Stat)/BaseStats[0]);
-	else if(Stat==eStat_Offense)
-		return (Unit.GetBaseStat(Stat)/BaseStats[1]);
-	else if(Stat==eStat_Defense)
-		return (Unit.GetBaseStat(Stat)/BaseStats[2]);
-	else if(Stat==eStat_Mobility)
-		return (Unit.GetBaseStat(Stat)/BaseStats[3]);
-	else if(Stat==eStat_Will)
-		return (Unit.GetBaseStat(Stat)/BaseStats[4]);
-	else if(Stat==eStat_Dodge)
-		return (Unit.GetBaseStat(Stat)/BaseStats[5]);
-	else if(Stat==eStat_ArmorMitigation)
-	{
-		if(Unit.GetBaseStat(Stat)==0)
-			return 1;
-		return (Unit.GetBaseStat(Stat)/BaseStats[6]);
-	}
-	else if(Stat==eStat_SightRadius)
-		return (Unit.GetBaseStat(Stat)/BaseStats[7]);
-	else if(Stat==eStat_PsiOffense)
-		return (Unit.GetBaseStat(Stat)/BaseStats[8]);
-	else if(Stat==eStat_FlankingCritChance)
-		return (Unit.GetBaseStat(Stat)/BaseStats[9]);
-	else 
+	if(Unit.GetBaseStat(Stat)==0 && Stat==eStat_ArmorMitigation)
 		return 1;
-	
+	return (Unit.GetBaseStat(Stat)/GetBaseModifiers(Stat));	
 }
 
 function int GetRandomStat(XComGameState_Unit Unit,NCE_StatModifiers StatMod)

@@ -1,7 +1,8 @@
 // This is an Unreal Script
                            
-class SecondWave_UIListItem_NCEStatChangesUpdate extends Actor dependson(SecondWave_GameStateParent);
+class SecondWave_UIListItem_NCEStatChangesUpdate extends UISimpleScreen dependson(SecondWave_GameStateParent);
 
+var UIBGBox BGB;
 
 var UIMechaListItem StatNCEDestcription;
 var UIMechaListItem StatTypeDropdown;
@@ -10,11 +11,13 @@ var UIMechaListItem StatMinSlider;
 var UIMechaListItem StatCostSlider;
 var UIMechaListItem FinalButton;
 var UIButton		CancelButton;
-var UIButton		RemoveButton;
+var UIButton		ApplyButton;
 
-var UIRanges StatRanges;
+var UIList MyList;
+
+var array<UIRanges> StatRanges;
+var UIRanges UsedStatRanges;
 var array<ECharStatType> CompatibleStatTypes;
-var array<string> StatTypesNames;
 var array<string> Descriptions;
 
 var string SCString;
@@ -25,143 +28,153 @@ var NCE_StatModifiers TempSM;
 
 delegate OnRemovedClickedDelegate(SecondWave_UIListItem_NCEStatChangesUpdate SCU);
 delegate OnSavedClickedDelegate(SecondWave_UIListItem_NCEStatChangesUpdate SCU);
-delegate OnListClicked(SecondWave_UIListItem_NCEStatChangesUpdate SCU);
+delegate OnCancelClickedDelegate(SecondWave_UIListItem_NCEStatChangesUpdate SCU);
 
-simulated function InitSCUpdateItem(UIList List,NCE_StatModifiers SSCSingle, UIRanges InStatRanges, 
+simulated function InitScreen(XComPlayerController InitController, UIMovie InitMovie, optional name InitName)
+{
+	super.InitScreen(InitController, InitMovie, InitName);
+	CreateScreen();
+	self.OriginCenter();
+	self.AnchorCenter();
+	StatNCEDestcription=UIMechaListItem(MyList.CreateItem(class'UIMechaListItem')).InitListItem();
+}
+
+simulated function InitSCUpdateItem(NCE_StatModifiers SSCSingle, array<UIRanges> InStatRanges, 
 									array<ECharStatType> InCompatibleStatTypes,array<string> Descs,
 									delegate<OnSavedClickedDelegate> OnSavedClicked,delegate<OnRemovedClickedDelegate> OnRemovedClicked,
-									delegate<OnListClicked> OnButtonClicked)
+									delegate<OnCancelClickedDelegate> OnCancClicked)
 {
-	local ECharStatType IndST;
-
+	`log("Called InitSCUpdateItem");
 	StatRanges=InStatRanges;
+	UsedStatRanges=StatRanges[StatRanges.Find('StatType',SSCSingle.StatType)];
 	CompatibleStatTypes=InCompatibleStatTypes;
-	foreach InCompatibleStatTypes(IndST)
-	{
-		StatTypesNames.AddItem(string(IndST));
-	}
+
 	SCSingle=SSCSingle;
 	TempSM=SSCSingle;
-	SCString="Stat:"$SCSingle.StatType @"Range:"$SCSingle.Stat_Range @"Min Stat:"$SCSingle.Stat_Min @"Cost:"$SCSingle.Stat_Cost;
-
-	StatNCEDestcription=UIMechaListItem(List.CreateItem(class'UIMechaListItem')).InitListItem();
-	StatNCEDestcription.UpdateDataButton(SCString,"Edit",OpenEditListClickedCallback,OpenEditListCallback);
+	SCString="Stat:"$SCSingle.StatType @", Range:"$SCSingle.Stat_Range @", Min Stat:"$SCSingle.Stat_Min @", Cost:"$SCSingle.Stat_Cost;
+	//CreateScreen();
+	StatNCEDestcription.UpdateDataDescription(SCString);
 	Descriptions=Descs;
 	OnRemovedClickedDelegate=OnRemovedClicked;
 	OnSavedClickedDelegate=OnSavedClicked;
-	OnListClicked=OnButtonClicked;
-}
-function OpenEditListCallback()
-{
-	OnListClicked(self);
-}
-function OpenEditListClickedCallback(UIButton Button)
-{
-	OnListClicked(self);
+	OnCancelClickedDelegate=OnCancClicked;
+	OpenEditList(MyList);
+
 }
 
-
-function OpenEditList(UIList List)
+simulated function CreateScreen()
 {
-	if(!IsOpen)
-	{
-		StatNCEDestcription.Button.SetText("Discard");
-		StatTypeDropdown=Spawn(class'UIMechaListItem',List.ItemContainer).InitListItem();
-		List.ItemContainer.ChildPanels.InsertItem(List.GetItemIndex(StatNCEDestcription)+1,StatTypeDropdown);
-		StatTypeDropdown.UpdateDataDropdown(Descriptions[0],StatTypesNames,0,OnStatTypeDropdownChanged);
-		StatTypeDropdown.Dropdown.Items=StatTypesNames;
-
-		StatRangeSlider=Spawn(class'UIMechaListItem',List.ItemContainer).InitListItem();
-		List.ItemContainer.ChildPanels.InsertItem(List.GetItemIndex(StatNCEDestcription)+2,StatRangeSlider);
-		StatRangeSlider.UpdateDataSlider(Descriptions[1],string(StatRanges.Range),0,,OnStatRangeChanged);
-		StatRangeSlider.Slider.stepSize=StatRanges.RangeSteps/100.00;
-
-		StatMinSlider=Spawn(class'UIMechaListItem',List.ItemContainer).InitListItem();
-		List.ItemContainer.ChildPanels.InsertItem(List.GetItemIndex(StatNCEDestcription)+3,StatMinSlider);
-		StatMinSlider.UpdateDataSlider(Descriptions[2],string(StatRanges.Min),0,,OnStatMinChanged);
-		StatMinSlider.Slider.stepSize=StatRanges.MinSteps/100.00;
-
-		StatCostSlider=Spawn(class'UIMechaListItem',List.ItemContainer).InitListItem();
-		List.ItemContainer.ChildPanels.InsertItem(List.GetItemIndex(StatNCEDestcription)+4,StatCostSlider);
-		StatCostSlider.UpdateDataSlider(Descriptions[3],string(StatRanges.Cost),0,,OnStatCostChanged);
-		StatCostSlider.Slider.stepSize=StatRanges.CostSteps/100.00;
+	local TRect rBG,rList;
 	
-		FinalButton=Spawn(class'UIMechaListItem',List.ItemContainer).InitListItem();
-		List.ItemContainer.ChildPanels.InsertItem(List.GetItemIndex(StatNCEDestcription)+5,FinalButton);
-		FinalButton.UpdateDataButton("","Apply",OnItemApply);
-		FinalButton.Button.AnchorTopRight();
-		CancelButton=Spawn(Class'UIButton',FinalButton).InitButton('CancelButton',"Cancel",OnItemCancel);
-		CancelButton.AnchorTopCenter();
-		RemoveButton=Spawn(Class'UIButton',FinalButton).InitButton('RemoveButton',"Remove",OnItemRemoved);
-		RemoveButton.AnchorTopLeft();
-		//ListContainer.ShrinkToFit();	
-	}
-	else
+	rBG=self.MakeRect(80,0,1760,990);
+	rList=self.MakeRect(170,53,1808-160,1017-90);
+	BGB=self.AddBG(rBG,eUIState_Normal);
+	MyList=AddList(rList," ",OnChildClicked);
+	MyList.ItemPadding=0;
+}
+
+
+simulated function OnRemoved()
+{
+	RemoveEverything(MyList);
+	Super.OnRemoved();	
+}
+
+function OpenEditList(UIList List, optional bool InitFromScratch=false)
+{
+	if(InitFromScratch)
 	{
-		RemoveEverything(List);
-		StatNCEDestcription=UIMechaListItem(List.CreateItem(class'UIMechaListItem')).InitListItem();
-		SCString="Stat:"$SCSingle.StatType @"Range:"$SCSingle.Stat_Range @"Min Stat:"$SCSingle.Stat_Min @"Cost:"$SCSingle.Stat_Cost;
-		StatNCEDestcription.UpdateDataButton(SCString,"Edit",OpenEditListClickedCallback,OpenEditListCallback);
+		StatNCEDestcription=UIMechaListItem(MyList.CreateItem(class'UIMechaListItem')).InitListItem();
+		SCString="Stat:"$SCSingle.StatType @", Range:"$SCSingle.Stat_Range @", Min Stat:"$SCSingle.Stat_Min @", Cost:"$SCSingle.Stat_Cost;
+		StatNCEDestcription.UpdateDataDescription(SCString);
 	}
+
+	StatTypeDropdown=UIMechaListItem(List.CreateItem(class'UIMechaListItem')).InitListItem();
+	StatTypeDropdown.UpdateDataSpinner(Descriptions[0],string(SCSingle.StatType),OnStatTypeSpinnerChanged);
+
+
+	StatRangeSlider=UIMechaListItem(List.CreateItem(class'UIMechaListItem')).InitListItem();
+	StatRangeSlider.UpdateDataSlider(Descriptions[1],string(UsedStatRanges.Range),0.5,,OnStatRangeChanged);
+	StatRangeSlider.Slider.SetStepSize(float(UsedStatRanges.RangeSteps)/100.00f);
+
+	StatMinSlider=UIMechaListItem(List.CreateItem(class'UIMechaListItem')).InitListItem();
+	StatMinSlider.UpdateDataSlider(Descriptions[2],string(UsedStatRanges.Min),0.5,,OnStatMinChanged);
+	StatMinSlider.Slider.SetStepSize(float(UsedStatRanges.MinSteps)/100.00f);
+
+	StatCostSlider=UIMechaListItem(List.CreateItem(class'UIMechaListItem')).InitListItem();
+	StatCostSlider.UpdateDataSlider(Descriptions[3],string(UsedStatRanges.Cost),0.5,,OnStatCostChanged);
+	StatCostSlider.Slider.SetStepSize(float(UsedStatRanges.CostSteps)/100.00f);
+
+	FinalButton=UIMechaListItem(List.CreateItem(class'UIMechaListItem')).InitListItem();
+	FinalButton.UpdateDataButton("","Remove",OnItemRemoved);
+	
+	CancelButton=Spawn(Class'UIButton',FinalButton);
+	CancelButton.InitButton(, "Cancel", OnItemCancel);
+	CancelButton.SetHeight( 35 );
+	CancelButton.SetX((CancelButton.Width)/2);
+
+	ApplyButton=Spawn(Class'UIButton',FinalButton);
+	ApplyButton.InitButton(, "Apply",OnItemApply);
+	ApplyButton.SetHeight( 35 );
+	ApplyButton.SetX((FinalButton.Width-ApplyButton.Width)/2);
+
+
+	List.RealizeList();
+	List.RealizeItems(0);
+	List.RealizeMaskAndScrollbar();
 }
 
 function RemoveEverything(UIList List)
 {
-	List.ItemContainer.RemoveChild(StatNCEDestcription);
-	List.ItemContainer.RemoveChild(StatTypeDropdown);
-	List.ItemContainer.RemoveChild(StatRangeSlider);
-	List.ItemContainer.RemoveChild(StatMinSlider);
-	List.ItemContainer.RemoveChild(StatCostSlider);
-	List.ItemContainer.RemoveChild(FinalButton);
+	List.ClearItems();
 
-	StatNCEDestcription.Removed();
-	StatTypeDropdown.Removed();
-	StatRangeSlider.Removed();
-	StatMinSlider.Removed();
-	StatCostSlider.Removed();
-	CancelButton.Removed();
-	FinalButton.Removed();
-
-	StatTypeDropdown.Hide();
-	StatNCEDestcription.Hide();
-	StatTypeDropdown.Hide();
-	StatRangeSlider.Hide();
-	StatMinSlider.Hide();
-	StatCostSlider.Hide();
-	CancelButton.Hide();
-	FinalButton.Hide();
-	StatTypeDropdown.Hide();
+	StatNCEDestcription.Remove();
+	StatTypeDropdown.Remove();
+	StatRangeSlider.Remove();
+	StatMinSlider.Remove();
+	StatCostSlider.Remove();
+	CancelButton.Remove();
+	FinalButton.Remove();
 	
 	List.RealizeList();
+	List.RealizeItems(0);
+	List.RealizeMaskAndScrollbar();
 }
 
-function OnStatTypeDropdownChanged(UIDropdown DropdownControl)
+function OnStatTypeSpinnerChanged(UIListItemSpinner SpinnerControl, int Direction)
 {
-	TempSM.StatType=CompatibleStatTypes[DropdownControl.SelectedItem];
+	local int Found;
+
+	Found=CompatibleStatTypes.Find(SCSingle.StatType);
+	if(Found>0||Direction==1)
+		Found+=Direction;
+	else if(Found==0 && Direction==-1)
+		Found=CompatibleStatTypes.Length-1;
+
+	TempSM.StatType=CompatibleStatTypes[Found];
+	SpinnerControl.SetValue(String(CompatibleStatTypes[Found]));
+	SpinnerControl.selectedIndex=Found;
+	UsedStatRanges=StatRanges[StatRanges.Find('StatType',TempSM.StatType)];	
+	RemoveEverything(MyList);
+	OpenEditList(MyList,true);
 }
 	
 function OnStatRangeChanged(UISlider sliderControl)
 {
-	if((TempSM.Stat_Range-(TempSM.Stat_Range))==0)
-		TempSM.Stat_Range=StatRanges.Range+Round(StatRanges.RangeSteps*(sliderControl.percent-50.0));
-	else
-		TempSM.Stat_Range=StatRanges.Range+(StatRanges.RangeSteps*(sliderControl.percent-50.0));
+	TempSM.Stat_Range=UsedStatRanges.Range+Round(2*UsedStatRanges.RangeSteps*(sliderControl.percent-50.0)/100);
+	sliderControl.SetText(string(TempSM.Stat_Range));
 }
 	
 function OnStatMinChanged(UISlider sliderControl)
 {
-	if((TempSM.Stat_Range-(TempSM.Stat_Range))==0)
-		TempSM.Stat_Min=StatRanges.Min+Round(StatRanges.MinSteps*(sliderControl.percent-50.0));
-	else
-		TempSM.Stat_Min=StatRanges.Min+(StatRanges.MinSteps*(sliderControl.percent-50.0));	
+	TempSM.Stat_Min=UsedStatRanges.Min+Round(2*UsedStatRanges.MinSteps*(sliderControl.percent-50.0)/100);
+	sliderControl.SetText(string(TempSM.Stat_Min));
 }
 	
 function OnStatCostChanged(UISlider sliderControl)
 {
-	if((TempSM.Stat_Range-(TempSM.Stat_Range))==0)
-		TempSM.Stat_Cost=StatRanges.Cost+Round(StatRanges.CostSteps*(sliderControl.percent-50.0));
-	else
-		TempSM.Stat_Cost=StatRanges.Cost+(StatRanges.CostSteps*(sliderControl.percent-50.0));		
+	TempSM.Stat_Cost=UsedStatRanges.Cost+Round(2*UsedStatRanges.CostSteps*(sliderControl.percent-50.0)/100);
+	sliderControl.SetText(string(TempSM.Stat_Cost));
 }
 
 simulated public function OnChildClicked(UIList ContainerList, int ItemIndex)
@@ -178,6 +191,7 @@ function OnItemApply(UIButton Button)
 function OnItemCancel(UIButton Button)
 {
 	TempSM=SCSingle;	
+	OnCancelClickedDelegate(self);
 }
 function OnItemRemoved(UIButton Button)
 {

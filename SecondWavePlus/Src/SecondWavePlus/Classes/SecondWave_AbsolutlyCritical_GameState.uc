@@ -4,7 +4,9 @@ class SecondWave_AbsolutlyCritical_GameState extends SecondWave_GameStateParent 
 
 var config bool bIs_AbsolutlyCritical_Activated;
 var config bool bIs_AbsolutlyCritical_XCOM_Activated;
+var config bool bIs_AbsolutlyCritical_Advent_Activated;
 var config bool bIs_AbsolutlyCritical_Aliens_Activated;
+var config bool bIs_AbsolutlyCritical_Enemies_Activated;
 
 function InitListeners()
 {
@@ -24,10 +26,10 @@ function AddAbsolutlyCriticalToUnit(XComGameState_Unit Unit,Optional XComGameSta
 {
 	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
 	local XComGameState BackupGameState;
-	if((Unit.GetTeam()==eTeam_XCom&&!bIs_AbsolutlyCritical_XCOM_Activated)||(Unit.GetTeam()==eTeam_Alien&&!bIs_AbsolutlyCritical_Aliens_Activated))
+	if(!bIs_AbsolutlyCritical_Activated)
 		return;
 
-	if(Unit.IsSoldier()&&bIs_AbsolutlyCritical_Activated)
+	if(Unit.IsSoldier()&&bIs_AbsolutlyCritical_XCOM_Activated)
 	{
 		OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
 		if(NewGameState!=none)
@@ -65,6 +67,9 @@ function AddAbsolutlyCriticalToUnit(XComGameState_Unit Unit,Optional XComGameSta
 	}
 	else if(bIs_AbsolutlyCritical_Activated&&(Unit.IsAdvent()||Unit.IsAlien()))
 	{
+		if(Unit.IsAdvent() && !(bIs_AbsolutlyCritical_Enemies_Activated || bIs_AbsolutlyCritical_Aliens_Activated))
+			return;
+		if(Unit.IsAlien() && ! (bIs_AbsolutlyCritical_Enemies_Activated || bIs_AbsolutlyCritical_Advent_Activated))
 		if(Unit.GetMaxStat(eStat_FlankingCritChance)!=100||Unit.GetCurrentStat(eStat_FlankingCritChance)!=100)
 		{
 			if(NewGameState==none)

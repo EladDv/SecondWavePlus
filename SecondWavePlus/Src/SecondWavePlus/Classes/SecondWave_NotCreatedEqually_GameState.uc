@@ -27,15 +27,6 @@ function EventListenerReturn NCEStart(Object EventData, Object EventSource, XCom
 	RandomStats(XComGameState_Unit(EventSource),NewGameState);
 	return ELR_NoInterrupt;
 }
-function int GetRandomStat(int StatRange,int StatMin)
-{
-	local int ReturnInt;
-	do
-	{
-		ReturnInt= RAND(StatRange+1) * GetRandomSign();		
-	}Until(ReturnInt>=StatMin);
-	return ReturnInt;
-}
 function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState)
 {
 	local int TotalCost,j,currentStat;

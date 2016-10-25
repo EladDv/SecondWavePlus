@@ -10,6 +10,12 @@ struct NCE_StatModifiers
 	var  int Stat_Cost;
 };
 
+struct Epigenetics_BaseStats
+{
+	var ECharStatType StatType;
+	var int Stat;	
+};
+
 struct RedFogFormulatType
 {
 	var ECharStatType StatType;

@@ -2,10 +2,25 @@
 
 [UIScreen_SecondWaveOptions]
 OptionNames[0]="Not Created Equally"
+OptionNames[1]="Handcrafted Robotics"
+OptionNames[2]="Expensive Talent"
+OptionNames[3]="Absolutly Critical"
+OptionNames[4]="Commander's Choice"
+OptionNames[5]="Epigenetics"
+OptionNames[6]="Artificial Genetics"
+OptionNames[7]="Hidden Potential"
+OptionNames[8]="Red Fog"
+OptionNames[9]="New Economy"
 
 UIRangesNames[0]="Stat Type"
 UIRangesNames[1]="Options Range"
 UIRangesNames[2]="Minimal Stat"
 UIRangesNames[3]="Stat Cost"
 
+ApplyToTypes[0]="Disabled"
+ApplyToTypes[1]="Active - XCom Only"
+ApplyToTypes[2]="Active - Advent Only"
+ApplyToTypes[3]="Active - Aliens Only"
+ApplyToTypes[4]="Active - All Enemies"
+ApplyToTypes[5]="Active - All Units"
 SWPOptionsHeader="Second Wave Plus Options Screen"
