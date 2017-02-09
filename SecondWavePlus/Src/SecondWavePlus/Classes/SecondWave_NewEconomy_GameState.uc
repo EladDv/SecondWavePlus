@@ -8,6 +8,17 @@ var config int MinimalRegionIncome;
 
 var bool RandomisedEcon;
 
+function ObtainOptions()
+{
+	local SecondWave_OptionsDataStore SWDataStore;
+	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();	
+
+	b_IsNewEconomyActive=SWDataStore.GetValues("b_IsNewEconomyActive").Bool_Value;
+	MinimalRegionIncome=SWDataStore.GetValues("MinimalRegionIncome").Int_Value;
+	NewEconomyMaxRandomPercentage=SWDataStore.GetValues("NewEconomyMaxRandomPercentage").Float_Value;
+
+}
+
 function CreateNewEconomy(Optional XComGameState NewGameState)
 {
 	local XComGameState_WorldRegion CurrentRegion;
@@ -27,6 +38,9 @@ function CreateNewEconomy(Optional XComGameState NewGameState)
 		CurrentRegion.BaseSupplyDrop=max(MinimalRegionIncome,NewIncome);
 		NewGameState.AddStateObject(CurrentRegion);
 	}
+
+	RandActor.Destroy();
+
 	RandomisedEcon=true;
 }
 

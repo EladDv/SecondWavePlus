@@ -56,6 +56,9 @@
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_GameStateParent.uc">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_OptionsDataStore.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_RandomizerActor.uc">
       <SubType>Content</SubType>
     </Content>
@@ -63,6 +66,9 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_UIListItem_NCEStatChangesUpdate.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\SecondWavePlus\Classes\SecondWave_UIScreenSettings_GameState.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\SecondWavePlus\Classes\SecondWave_X2SoldierClassTemplate_Helper.uc">

@@ -8,7 +8,7 @@
 //  Copyright (c) 2016 Firaxis Games, Inc. All rights reserved.
 //---------------------------------------------------------------------------------------
 
-class X2DownloadableContentInfo_SecondWavePlus extends X2DownloadableContentInfo;
+class X2DownloadableContentInfo_SecondWavePlus extends X2DownloadableContentInfo dependson(SecondWave_GameStateParent);
 
 
 
@@ -19,6 +19,17 @@ class X2DownloadableContentInfo_SecondWavePlus extends X2DownloadableContentInfo
 /// </summary>
 static event OnLoadedSavedGame()
 {
+	local UIScreen_SecondWaveOptions UISWOScreen;
+
+	UISWOScreen= `SCREENSTACK.GetCurrentScreen().Spawn(Class'UIScreen_SecondWaveOptions',none);
+	`SCREENSTACK.Push(UISWOScreen);
+	UISWOScreen.CreateScreen();
+	UISWOScreen.LargeB.OnClickedDelegate=OnContinueButton;		
+	UISWOScreen.LargeB.OnDoubleClickedDelegate=OnContinueButton;
+}
+
+simulated public function OnContinueButton(UIButton Button)
+{
 	local SecondWave_CommandersChoice_GameState		Main_CommandersChoice_GameState;
 	local SecondWave_HiddenPotential_GameState		Main_HiddenPotential_GameState;
 	local SecondWave_Epigenetics_GameState			Main_Epigenetics_GameState;
@@ -26,7 +37,11 @@ static event OnLoadedSavedGame()
 	local SecondWave_AbsolutlyCritical_GameState	Main_AbsolutlyCritical_GameState;
 	local SecondWave_NewEconomy_GameState			Main_NewEconomy_GameState;
 	local SecondWave_RedFog_GameState				Main_RedFog_GameState;
+	local SecondWave_UIScreenSettings_GameState		Main_ScreenSettings_GameState;
 	local XComGameState StartState;
+
+
+	UIScreen_SecondWaveOptions(`SCREENSTACK.GetFirstInstanceOf(class'UIScreen_SecondWaveOptions')).ContinueButton(Button);
 
 	StartState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Loading Data For New Campagin");
 	Main_CommandersChoice_GameState=SecondWave_CommandersChoice_GameState(StartState.CreateStateObject(class'SecondWave_CommandersChoice_GameState'));
@@ -36,6 +51,7 @@ static event OnLoadedSavedGame()
 	Main_AbsolutlyCritical_GameState=SecondWave_AbsolutlyCritical_GameState(StartState.CreateStateObject(class'SecondWave_AbsolutlyCritical_GameState'));
 	Main_RedFog_GameState=SecondWave_RedFog_GameState(StartState.CreateStateObject(class'SecondWave_RedFog_GameState'));
 	Main_NewEconomy_GameState=SecondWave_NewEconomy_GameState(StartState.CreateStateObject(class'SecondWave_NewEconomy_GameState'));
+	Main_ScreenSettings_GameState=SecondWave_UIScreenSettings_GameState(StartState.CreateStateObject(class'SecondWave_UIScreenSettings_GameState'));
 
 	StartState.AddStateObject(Main_CommandersChoice_GameState);
 	StartState.AddStateObject(Main_HiddenPotential_GameState);
@@ -44,12 +60,24 @@ static event OnLoadedSavedGame()
 	StartState.AddStateObject(Main_AbsolutlyCritical_GameState);
 	StartState.AddStateObject(Main_NewEconomy_GameState);
 	StartState.AddStateObject(Main_RedFog_GameState);
-	`log("Starting New Campaign",,'Second Wave Plus');
+	StartState.AddStateObject(Main_ScreenSettings_GameState);
+
+	Main_CommandersChoice_GameState.ObtainOptions();
+	Main_HiddenPotential_GameState.ObtainOptions();
+	Main_Epigenetics_GameState.ObtainOptions();
+	Main_NotCreatedEqually_GameState.ObtainOptions();
+	Main_AbsolutlyCritical_GameState.ObtainOptions();
+	Main_RedFog_GameState.ObtainOptions();
+	Main_NewEconomy_GameState.ObtainOptions();
+	Main_ScreenSettings_GameState.ObtainOptions();
+
+	`log("Grabbing New Options On Old Campaign",,'Second Wave Plus');
 	CheckForUnitComponents(StartState,Main_HiddenPotential_GameState,Main_NotCreatedEqually_GameState,Main_AbsolutlyCritical_GameState);
 	Main_HiddenPotential_GameState.InitListeners();
 	Main_NotCreatedEqually_GameState.InitListeners();	
 	Main_RedFog_GameState.InitListeners();	
 	Main_NewEconomy_GameState.CreateNewEconomy(StartState);
+
 	if(StartState.GetNumGameStateObjects()>0)
 		`XCOMHistory.AddGameStateToHistory(StartState);
 	else
@@ -69,6 +97,7 @@ static event InstallNewCampaign(XComGameState StartState)
 	local SecondWave_AbsolutlyCritical_GameState	Main_AbsolutlyCritical_GameState;
 	local SecondWave_NewEconomy_GameState			Main_NewEconomy_GameState;
 	local SecondWave_RedFog_GameState				Main_RedFog_GameState;
+	local SecondWave_UIScreenSettings_GameState		Main_ScreenSettings_GameState;
 
 	Main_CommandersChoice_GameState=SecondWave_CommandersChoice_GameState(StartState.CreateStateObject(class'SecondWave_CommandersChoice_GameState'));
 	Main_HiddenPotential_GameState=SecondWave_HiddenPotential_GameState(StartState.CreateStateObject(class'SecondWave_HiddenPotential_GameState'));
@@ -77,6 +106,7 @@ static event InstallNewCampaign(XComGameState StartState)
 	Main_AbsolutlyCritical_GameState=SecondWave_AbsolutlyCritical_GameState(StartState.CreateStateObject(class'SecondWave_AbsolutlyCritical_GameState'));
 	Main_RedFog_GameState=SecondWave_RedFog_GameState(StartState.CreateStateObject(class'SecondWave_RedFog_GameState'));
 	Main_NewEconomy_GameState=SecondWave_NewEconomy_GameState(StartState.CreateStateObject(class'SecondWave_NewEconomy_GameState'));
+	Main_ScreenSettings_GameState=SecondWave_UIScreenSettings_GameState(StartState.CreateStateObject(class'SecondWave_UIScreenSettings_GameState'));
 
 	StartState.AddStateObject(Main_CommandersChoice_GameState);
 	StartState.AddStateObject(Main_HiddenPotential_GameState);
@@ -85,6 +115,17 @@ static event InstallNewCampaign(XComGameState StartState)
 	StartState.AddStateObject(Main_AbsolutlyCritical_GameState);
 	StartState.AddStateObject(Main_NewEconomy_GameState);
 	StartState.AddStateObject(Main_RedFog_GameState);
+	StartState.AddStateObject(Main_ScreenSettings_GameState);
+	
+	Main_CommandersChoice_GameState.ObtainOptions();
+	Main_HiddenPotential_GameState.ObtainOptions();
+	Main_Epigenetics_GameState.ObtainOptions();
+	Main_NotCreatedEqually_GameState.ObtainOptions();
+	Main_AbsolutlyCritical_GameState.ObtainOptions();
+	Main_RedFog_GameState.ObtainOptions();
+	Main_NewEconomy_GameState.ObtainOptions();
+	Main_ScreenSettings_GameState.ObtainOptions();
+
 	`log("Starting New Campaign",,'Second Wave Plus');
 	CheckForUnitComponents(StartState,Main_HiddenPotential_GameState,Main_NotCreatedEqually_GameState,Main_AbsolutlyCritical_GameState);
 	Main_HiddenPotential_GameState.InitListeners();

@@ -22,6 +22,7 @@ var bool bIs_CommandersChoiceForVets_Active;
 var bool bIs_AbsolutlyCritical_Active;
 var bool bIs_AbsolutlyCritical_XCOM_Active;
 var bool bIs_AbsolutlyCritical_Aliens_Active;
+var bool bIs_AbsolutlyCritical_Advent_Active;
 
 //----------------Epigenetics------------------
 var bool bIs_Epigenetics_Active;
@@ -31,6 +32,7 @@ var array<NCE_StatModifiers> EpigeneticsStatModifiers;
 //------------------Red Fog--------------------
 var bool b_IsRedFog_Active;
 var bool b_IsRedFogActive_Aliens;
+var bool b_IsRedFogActive_Advent;
 var bool b_IsRedFogActive_XCom;
 var bool b_IsRedFogActive_Robotics;
 var bool b_UseGaussianEquasion;
@@ -79,7 +81,7 @@ function InitSettings()
 	bIs_AbsolutlyCritical_Active=Main_AbsolutlyCritical_GameState.bIs_AbsolutlyCritical_Activated;
 	bIs_AbsolutlyCritical_XCOM_Active=Main_AbsolutlyCritical_GameState.bIs_AbsolutlyCritical_XCOM_Activated;
 	bIs_AbsolutlyCritical_Aliens_Active=Main_AbsolutlyCritical_GameState.bIs_AbsolutlyCritical_Aliens_Activated;
-
+	bIs_AbsolutlyCritical_Advent_Active=Main_AbsolutlyCritical_GameState.bIs_AbsolutlyCritical_Advent_Activated;
 	//----------------Epigenetics------------------
 	bIs_Epigenetics_Active=Main_Epigenetics_GameState.bIs_Epigenetics_Activated;
 	bIs_EpigeneticsRobotics_Active=Main_Epigenetics_GameState.bIs_EpigeneticsRobotics_Activated;
@@ -88,6 +90,7 @@ function InitSettings()
 	//------------------Red Fog--------------------
 	b_IsRedFog_Active=Main_RedFog_GameState.b_IsRedFogActive;
 	b_IsRedFogActive_Aliens=Main_RedFog_GameState.b_IsRedFogActive_Aliens;
+	b_IsRedFogActive_Advent=Main_RedFog_GameState.b_IsRedFogActive_Advent;
 	b_IsRedFogActive_XCom=Main_RedFog_GameState.b_IsRedFogActive_XCom;
 	b_IsRedFogActive_Robotics=Main_RedFog_GameState.b_IsRedFogActive_Robotics;
 	b_UseGaussianEquasion=Main_RedFog_GameState.b_UseGaussianEquasion;

@@ -4,13 +4,34 @@ class SecondWave_CommandersChoice_GameState extends SecondWave_GameStateParent c
 
 var config bool bIs_CommandersChoice_Activated;
 var config bool bIs_CommandersChoiceForVets_Activated;
+var config array<string> ExcludedClasses;
 
-function ChangeClass (XComGameState_Unit Unit,name ClassName)
+function ObtainOptions()
+{
+	local SecondWave_OptionsDataStore SWDataStore;
+	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();	
+
+	bIs_CommandersChoice_Activated=SWDataStore.GetValues("bIs_CommandersChoice_Activated").Bool_Value;
+}
+
+function ChangeClass (XComGameState_Unit mUnit,name ClassName)
 {
     local XComGameStateHistory History;
 	local XComGameState NewGameState;
-	local int i,OriginalRank;
+	local XComGameState_Unit Unit;
+	local int i,OriginalRank,OGwillCurrent,OGwillMax,OGwillShaken;
+	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
+
+	if(string(ClassName) ~= string(mUnit.GetSoldierClassTemplate().DataName) || !bIs_CommandersChoice_Activated ||(!bIs_CommandersChoiceForVets_Activated && mUnit.GetRank()>1))
+		return;
+	
 	NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Class");
+	Unit= XComGameState_Unit(NewGameState.CreateStateObject(mUnit.class,mUnit.ObjectID));
+	OGwillCurrent=Unit.GetCurrentStat(eStat_Will);
+	OGwillMax=Unit.GetBaseStat(eStat_Will);
+	if(Unit.bIsShaken)
+		OGwillShaken=Unit.SavedWillValue;
+	
 	if(!ReverseHiddenPotential(Unit,NewGameState))
 	{
 		OriginalRank=UnrankUnit(Unit,NewGameState);
@@ -20,28 +41,54 @@ function ChangeClass (XComGameState_Unit Unit,name ClassName)
 			`XCOMHISTORY.CleanupPendingGameState(NewGameState);
 
 		NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Class");
-
+		Unit= XComGameState_Unit(NewGameState.CreateStateObject(mUnit.class,mUnit.ObjectID));
+	
 		for(i=0;i<OriginalRank;i++)
 		{
 			Unit.RankUpSoldier( NewGameState, ClassName , false);
+
 			`XEVENTMGR.TriggerEvent('HiddenPotential_ApplyUpdate',Unit,Unit,NewGameState);	
 		}
 	}
 	else
 	{
-		`XEVENTMGR.TriggerEvent('HiddenPotential_Start',Unit,Unit,NewGameState);	
 		OriginalRank=UnrankUnit(Unit,NewGameState);
+		if(NewGameState.GetNumGameStateObjects()>0)
+			`XCOMHISTORY.AddGameStateToHistory(NewGameState);
+		else
+			`XCOMHISTORY.CleanupPendingGameState(NewGameState);
 		for(i=0;i<OriginalRank;i++)
 		{
+			NewGameState=class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Updating Unit Class");
+			Unit= XComGameState_Unit(NewGameState.CreateStateObject(mUnit.class,mUnit.ObjectID));
+
 			Unit.RankUpSoldier( NewGameState, ClassName , false);
+
 			`XEVENTMGR.TriggerEvent('HiddenPotential_ApplyUpdate',Unit,Unit,NewGameState);	
 		}
 	}
+	Unit.SetBaseMaxStat(eStat_Will,OGwillMax);
+	Unit.SetCurrentStat(eStat_Will,OGwillCurrent);
+	if(Unit.bIsShaken)
+		Unit.SavedWillValue=OGwillShaken;
+
+	UIArmory_Promotion(`SCREENSTACK.GetFirstInstanceOf(class'UIArmory_Promotion')).Header.PopulateData(Unit);
+
+	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
+	if(NewGameState!=none)
+		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
+	NewGameState.AddStateObject(Unit);
+	NewGameState.AddStateObject(SW_UnitComponent);
+	
 	History=`XCOMHISTORY;
 	if(NewGameState.GetNumGameStateObjects()>0)
+	{
 		History.AddGameStateToHistory(NewGameState);
+	}
 	else
 		History.CleanupPendingGameState(NewGameState);
+
+	UIArmory_Promotion(`SCREENSTACK.GetFirstInstanceOf(class'UIArmory_Promotion')).PopulateData();
 
 }
 
@@ -73,7 +120,6 @@ function bool ReverseHiddenPotential(XComGameState_Unit Unit,XComGameState NewGa
 		}
 	}	
 	SW_UnitComponent.SetHasGot_HiddenPotential(false);
-	NewGameState.AddStateObject(SW_UnitComponent);
 	return true;
 }
 
@@ -85,6 +131,7 @@ function int UnrankUnit(XComGameState_Unit Unit,XComGameState NewGameState)
 	local array<SoldierClassStatType> SoldierClassProgressions;
 	local SoldierClassStatType SingleSoldierClassProgression;
 	local int i,SaveRank,MaxStat,CurrentStat;
+	local XComGameState_SecondWavePlus_UnitComponent SW_UnitComponent,OldUnitComp;
 
 	SaveRank=Unit.GetRank();
 	for(i=0;i<Unit.GetRank();i++)
@@ -112,5 +159,10 @@ function int UnrankUnit(XComGameState_Unit Unit,XComGameState NewGameState)
 		`log("Unit Base Stats"@ECharStatType(i) @"Max Stat:" @MaxSoldierStats[i] @"Current Stat:"@CurrentSoldierStats[i],,'Second Wave Plus-Commanders Choice');
 	}
 	NewGameState.AddStateObject(Unit);
+	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
+	if(NewGameState!=none)
+		SW_UnitComponent=XComGameState_SecondWavePlus_UnitComponent(NewGameState.CreateStateObject(class'XComGameState_SecondWavePlus_UnitComponent',OldUnitComp.ObjectID));
+	NewGameState.AddStateObject(SW_UnitComponent);
+	
 	return SaveRank;
 }

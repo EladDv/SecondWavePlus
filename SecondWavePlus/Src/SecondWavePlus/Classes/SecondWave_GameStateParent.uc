@@ -45,6 +45,16 @@ struct UIRanges
 	var int	CostSteps;
 };
 
+struct SecondWaveOptions
+{
+	var string Option;
+	var int		Int_Value;	
+	var bool	bool_Value;	
+	var float	float_Value;	
+	var string	string_Value;	
+	var name	Name_Value;	
+};
+
 function int GetRandomSign()
 {
 	local int i;

@@ -6,7 +6,6 @@ var config bool bIs_AbsolutlyCritical_Activated;
 var config bool bIs_AbsolutlyCritical_XCOM_Activated;
 var config bool bIs_AbsolutlyCritical_Advent_Activated;
 var config bool bIs_AbsolutlyCritical_Aliens_Activated;
-var config bool bIs_AbsolutlyCritical_Enemies_Activated;
 
 function InitListeners()
 {
@@ -15,6 +14,19 @@ function InitListeners()
 	Myself=self;
 	`XEVENTMGR.RegisterForEvent(Myself,'AbsolutlyCritical_Start',AbsolutlyCriticalStart, , , ,true);
 }
+
+function ObtainOptions()
+{
+	local SecondWave_OptionsDataStore SWDataStore;
+	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();	
+
+	bIs_AbsolutlyCritical_Activated=SWDataStore.GetValues("bIs_AbsolutlyCritical_Activated").Bool_Value;
+	bIs_AbsolutlyCritical_XCOM_Activated=SWDataStore.GetValues("bIs_AbsolutlyCritical_XCOM_Activated").Bool_Value;
+	bIs_AbsolutlyCritical_Advent_Activated=SWDataStore.GetValues("bIs_AbsolutlyCritical_Advent_Activated").Bool_Value;
+	bIs_AbsolutlyCritical_Aliens_Activated=SWDataStore.GetValues("bIs_AbsolutlyCritical_Aliens_Activated").Bool_Value;
+}
+
+
 function EventListenerReturn AbsolutlyCriticalStart(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)
 {
 	if(bIs_AbsolutlyCritical_Activated)
@@ -67,9 +79,11 @@ function AddAbsolutlyCriticalToUnit(XComGameState_Unit Unit,Optional XComGameSta
 	}
 	else if(bIs_AbsolutlyCritical_Activated&&(Unit.IsAdvent()||Unit.IsAlien()))
 	{
-		if(Unit.IsAdvent() && !(bIs_AbsolutlyCritical_Enemies_Activated || bIs_AbsolutlyCritical_Aliens_Activated))
+		if(Unit.IsAdvent() && !bIs_AbsolutlyCritical_Advent_Activated)
 			return;
-		if(Unit.IsAlien() && ! (bIs_AbsolutlyCritical_Enemies_Activated || bIs_AbsolutlyCritical_Advent_Activated))
+		if(Unit.IsAlien() && !bIs_AbsolutlyCritical_Aliens_Activated)
+			return;
+
 		if(Unit.GetMaxStat(eStat_FlankingCritChance)!=100||Unit.GetCurrentStat(eStat_FlankingCritChance)!=100)
 		{
 			if(NewGameState==none)

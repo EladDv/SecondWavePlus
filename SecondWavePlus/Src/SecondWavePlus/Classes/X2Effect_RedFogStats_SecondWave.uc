@@ -4,6 +4,7 @@ Class X2Effect_RedFogStats_SecondWave extends X2Effect_PersistentStatChange depe
 
 var config bool b_IsRedFogActive;
 var config bool b_IsRedFogActive_Aliens;
+var config bool b_IsRedFogActive_Advent;
 var config bool b_IsRedFogActive_XCom;
 var config bool b_IsRedFogActive_Robotics;
 var config bool b_UseGaussianEquasion;
@@ -24,6 +25,21 @@ simulated function AddRedFogStatChange(ECharStatType StatType,XComGameState_Unit
 	NewChange.ModOp = InModOp;
 
 	m_aStatChanges.AddItem(NewChange);
+}
+
+function GetToHitModifiers(XComGameState_Effect EffectState, XComGameState_Unit Attacker, XComGameState_Unit Target, XComGameState_Ability AbilityState, class<X2AbilityToHitCalc> ToHitType, bool bMelee, bool bFlanking, bool bIndirectFire, out array<ShotModifierInfo> ShotModifiers)
+{
+	local ShotModifierInfo ShotInfo;
+	local int Found;
+
+	Found=m_aStatChanges.Find('StatType',eStat_Offense);
+	if(Found != -1)
+	{
+		ShotInfo.ModType = eHit_Success;
+		ShotInfo.Reason = "SWP Red Fog";
+		ShotInfo.Value =m_aStatChanges[Found].StatAmount;
+		ShotModifiers.AddItem(ShotInfo);
+	}
 }
 
 simulated protected function OnEffectAdded(const out EffectAppliedData ApplyEffectParameters, XComGameState_BaseObject kNewTargetState, XComGameState NewGameState, XComGameState_Effect NewEffectState)

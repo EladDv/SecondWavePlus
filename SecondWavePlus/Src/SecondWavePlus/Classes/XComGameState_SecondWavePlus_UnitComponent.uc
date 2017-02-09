@@ -82,3 +82,45 @@ public function bool GetHasGot_HiddenPotential ()
 {
 	return b_HasGot_HiddenPotential;	
 }
+
+static function GCValidationChecks() //Thanks Amineri and LWS
+{
+    local XComGameStateHistory History;
+    local XComGameState NewGameState;
+    local XComGameState_Unit UnitState;
+    local XComGameState_SecondWavePlus_UnitComponent SWPCState;
+ 
+    `LOG("LWOfficerUtilities: Starting Garbage Collection and Validation.");
+ 
+    History = `XCOMHISTORY;
+    NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Officer States cleanup");
+    foreach History.IterateByClassType(class'XComGameState_SecondWavePlus_UnitComponent',SWPCState,,true)
+    {
+        `LOG("Found SWP State, OwningObjectID=" $ SWPCState.OwningObjectId $ ", Deleted=" $ SWPCState.bRemoved,,'Dragonpunk Second Wave Plus');
+        //check and see if the OwningObject is still alive and exists
+        if(SWPCState.OwningObjectId > 0)
+        {
+            UnitState = XComGameState_Unit(History.GetGameStateForObjectID(SWPCState.OwningObjectID));
+            if(UnitState == none)
+            {
+                `LOG("SWP Component has no current owning unit, cleaning up state.",,'Dragonpunk Second Wave Plus');
+                // Remove disconnected officer state
+                NewGameState.RemoveStateObject(SWPCState.ObjectID);
+            }
+            else
+            {
+                `LOG("Found Owning Unit=" $ UnitState.GetFullName() $ ", Deleted=" $ UnitState.bRemoved,,'Dragonpunk Second Wave Plus');
+                if(UnitState.bRemoved)
+                {
+                    `LOG("LWOfficerUtilities: Owning Unit was removed, Removing SWPCState");
+                    NewGameState.RemoveStateObject(SWPCState.ObjectID);
+                }
+            }
+        }
+    }
+    if (NewGameState.GetNumGameStateObjects() > 0)
+        `GAMERULES.SubmitGameState(NewGameState);
+    else
+        History.CleanupPendingGameState(NewGameState);
+}
+ 

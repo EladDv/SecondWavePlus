@@ -10,6 +10,8 @@ var config float	ExpensiveTalentMultiplier;
 var config int		TotalPoints_XCom;
 var config int		Tolerance_XCom;
 var config array<NCE_StatModifiers> NCEStatModifiers;
+var config array<string> ExcludedClasses;
+//var config array<UIRanges> StatChangeRanges;
 
 function InitListeners()
 {
@@ -20,6 +22,20 @@ function InitListeners()
 	`XEVENTMGR.RegisterForEvent(Myself,'NewCrewNotification',ExpensiveTalentResourceUpdate,ELD_OnStateSubmitted);
 }
 
+function ObtainOptions()
+{
+	local SecondWave_OptionsDataStore SWDataStore;
+	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();	
+
+	bIs_NCE_Activated=SWDataStore.GetValues("bIs_NCE_Activated").Bool_Value;
+	bIs_NCERobotic_Activated=SWDataStore.GetValues("bIs_NCERobotic_Activated").Bool_Value;
+	bIs_ExpensiveTalent_Activated=SWDataStore.GetValues("bIs_ExpensiveTalent_Activated").Bool_Value;
+	ExpensiveTalentMultiplier=SWDataStore.GetValues("ExpensiveTalentMultiplier").Float_Value;
+	TotalPoints_XCom=SWDataStore.GetValues("TotalPoints_XCom").Int_Value;
+	Tolerance_XCom=SWDataStore.GetValues("Tolerance_XCom").Int_Value;
+	NCEStatModifiers=SWDataStore.SavedNCEItems;
+
+}
 
 
 function EventListenerReturn NCEStart(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)
@@ -34,8 +50,10 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 	local XComGameState BackupGameState;
 	local array<int> RandomStats;
 	local SecondWave_RandomizerActor RandActor;
+
+
 	
-	if(Unit.IsRobotic()||!bIs_NCERobotic_Activated)
+	if(Unit.IsRobotic()||!bIs_NCERobotic_Activated )
 		return;
 	RandActor=`SCREENSTACK.GetCurrentScreen().Spawn(class'SecondWave_RandomizerActor',`SCREENSTACK.GetCurrentScreen());	
 	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
@@ -49,35 +67,41 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 	`log("Testing:"@bIs_NCE_Activated @Unit.IsSoldier() @SW_UnitComponent!=none @!SW_UnitComponent.GetHasGot_NotCreatedEqually() @Unit.GetFullName(),,'Second Wave Plus-NCE');
 	if(bIs_NCE_Activated&&Unit.IsSoldier() && SW_UnitComponent!=none && !SW_UnitComponent.GetHasGot_NotCreatedEqually())
 	{
-		do
+		if(ExcludedClasses.Find(string(Unit.GetSoldierClassTemplateName()))==-1)
 		{
-			TotalCost=0;
-			RandomStats.Length=0;
-			for(j=0;j<NCEStatModifiers.Length;j++)
+			do
 			{
-				currentStat=RandActor.GetRandomStat(NCEStatModifiers[j].Stat_Range,NCEStatModifiers[j].Stat_Min);
-				RandomStats.AddItem(currentStat);
-				TotalCost+=(currentStat*NCEStatModifiers[j].Stat_Cost);
-			}
-		}Until(Abs(TotalCost-TotalPoints_XCom)<=Tolerance_XCom);
+				TotalCost=0;
+				RandomStats.Length=0;
+				for(j=0;j<NCEStatModifiers.Length;j++)
+				{
+					currentStat=RandActor.GetRandomStat(NCEStatModifiers[j].Stat_Range,NCEStatModifiers[j].Stat_Min);
+					RandomStats.AddItem(currentStat);
+					TotalCost+=(currentStat*NCEStatModifiers[j].Stat_Cost);
+				}
+			}Until(Abs(TotalCost-TotalPoints_XCom)<=Tolerance_XCom);
 	
-		`log("New XCom Cost"@TotalCost,,'Second Wave Plus-NCE');
-		for(j=0;j<RandomStats.Length;j++)
-		{
-			Unit.SetBaseMaxStat(NCEStatModifiers[j].StatType,Unit.GetMaxStat(NCEStatModifiers[j].StatType)+RandomStats[j]);
-			Unit.SetCurrentStat(NCEStatModifiers[j].StatType,Unit.GetMaxStat(NCEStatModifiers[j].StatType));
-			`log("New XCom Stat:"@NCEStatModifiers[j].StatType @"Max:"@Unit.GetMaxStat(NCEStatModifiers[j].StatType) @"Cost:"@(RandomStats[j]*NCEStatModifiers[j].Stat_Cost) ,,'Second Wave Plus-NCE');
+			`log("New soldier NCE: "@Unit.GetFullName(),,'Second Wave Plus-NCE');
+			`log("New XCom Cost"@TotalCost,,'Second Wave Plus-NCE');
+			for(j=0;j<RandomStats.Length;j++)
+			{
+				Unit.SetBaseMaxStat(NCEStatModifiers[j].StatType,Unit.GetMaxStat(NCEStatModifiers[j].StatType)+RandomStats[j]);
+				Unit.SetCurrentStat(NCEStatModifiers[j].StatType,Unit.GetMaxStat(NCEStatModifiers[j].StatType));
+				`log("New XCom Stat:"@NCEStatModifiers[j].StatType @"Max:"@Unit.GetMaxStat(NCEStatModifiers[j].StatType) @"Cost:"@(RandomStats[j]*NCEStatModifiers[j].Stat_Cost) ,,'Second Wave Plus-NCE');
 
+			}
+			Unit.setBaseMaxStat(eStat_ArmorChance,100.00f);
+			Unit.setCurrentStat(eStat_ArmorChance,100.00f);
+		
+			if(bIs_ExpensiveTalent_Activated)
+			{
+				SW_UnitComponent.ExtraCostExpensiveTalent= Round(ExpensiveTalentMultiplier*TotalCost);
+				`log("Expensive Talent Cost:"@Round(ExpensiveTalentMultiplier*TotalCost),,'Second Wave Plus-Expensive Talent');
+			}
 		}
-		Unit.setBaseMaxStat(eStat_ArmorChance,100.00f);
-		Unit.setCurrentStat(eStat_ArmorChance,100.00f);
+
 		SW_UnitComponent.SetHasGot_NotCreatedEqually(True);
 
-		if(bIs_ExpensiveTalent_Activated)
-		{
-			SW_UnitComponent.ExtraCostExpensiveTalent= Round(ExpensiveTalentMultiplier*TotalCost);
-			`log("Expensive Talent Cost:"@Round(ExpensiveTalentMultiplier*TotalCost),,'Second Wave Plus-Expensive Talent');
-		}
 		if(NewGameState!=none)
 		{
 			NewGameState.AddStateObject(SW_UnitComponent);
@@ -94,6 +118,8 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 				`XCOMHistory.CleanupPendingGameState(BackupGameState);
 		}
 	}
+
+	RandActor.Destroy();
 }
 
 function EventListenerReturn ExpensiveTalentResourceUpdate(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)

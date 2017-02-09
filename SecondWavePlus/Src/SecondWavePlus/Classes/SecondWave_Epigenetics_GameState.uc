@@ -8,8 +8,22 @@ var config bool bIs_EpigeneticsRobotics_Activated;
 var config array<NCE_StatModifiers> EpigeneticsStatModifiers;
 var config array<Epigenetics_BaseStats> EpigeneticsBaseStats;
 var config array<string> ExcludeUnitFromFillingHP; 
+var config array<string> ExcludeUnitFromEpigenetics; 
 var config int TotalPoints_Enemy;
 var config int Tolerance_Enemy;
+
+function ObtainOptions()
+{
+	local SecondWave_OptionsDataStore SWDataStore;
+	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();	
+
+	bIs_Epigenetics_Activated=SWDataStore.GetValues("bIs_Epigenetics_Activated").Bool_Value;
+	bIs_EpigeneticsRobotics_Activated=SWDataStore.GetValues("bIs_EpigeneticsRobotics_Activated").Bool_Value;
+	TotalPoints_Enemy=SWDataStore.GetValues("TotalPoints_Enemy").Int_Value;
+	Tolerance_Enemy=SWDataStore.GetValues("Tolerance_Enemy").Int_Value;
+	EpigeneticsStatModifiers=SWDataStore.SavedEpigeneticsItems;
+
+}
 
 function int GetBaseModifiers(ECharStatType StatT)
 {
@@ -39,6 +53,9 @@ function bool RandomEnemyStats(XComGameState_Unit Unit)
 	if(Unit.IsRobotic()||!bIs_EpigeneticsRobotics_Activated)
 		return false;
 
+	if(ExcludeUnitFromEpigenetics.Find(string(Unit.GetMyTemplateName()))!=-1)
+		return false;
+		       
 	if(bIs_Epigenetics_Activated&&Unit.GetTeam()==ETeam_Alien) // Fix Alien Rulers, or just disable
 	{
 		do
@@ -53,7 +70,8 @@ function bool RandomEnemyStats(XComGameState_Unit Unit)
 			}
 		}Until(Abs(TotalCost-TotalPoints_Enemy)<=Tolerance_Enemy);
 		
-		`log("New Enemy Cost"@TotalCost,,'Second Wave Plus-Epigenetics');
+		`log("New Enemy: " @Unit.GetMyTemplateName(),,'Second Wave Plus-Epigenetics');
+		`log("New Enemy Cost"@TotalCost ,,'Second Wave Plus-Epigenetics');
 
 		for(j=0;j<RandomStats.Length;j++)
 		{
@@ -90,13 +108,15 @@ function int GetRandomStat(XComGameState_Unit Unit,NCE_StatModifiers StatMod)
 	local int ReturnStat;
 	local SecondWave_RandomizerActor RandActor;
 	
-	RandActor=`SCREENSTACK.GetCurrentScreen().Spawn(class'SecondWave_RandomizerActor',`SCREENSTACK.GetCurrentScreen());
+	RandActor=`SCREENSTACK.GetCurrentScreen().Spawn(class'SecondWave_RandomizerActor',none);
 	do
 	{
 		ReturnStat= RandActor.GetRandomStat(StatMod.Stat_Range,StatMod.Stat_Min);//	RAND(StatMod.Stat_Range+1)*GetRandomSign();
 	}Until(ReturnStat>=StatMod.Stat_Min && 
 	(Unit.GetMaxStat(StatMod.StatType)+Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=0 && 
 	(StatMod.StatType!=eStat_Mobility||(Unit.GetMaxStat(StatMod.StatType)+Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType)))>=7));
+
+	RandActor.Destroy();
 
 	return Round(ReturnStat*GetUnitStatModifier(Unit,StatMod.StatType));
 }

@@ -4,6 +4,7 @@ class SecondWave_RedFog_GameState extends SecondWave_GameStateParent config(Seco
 
 var config bool b_IsRedFogActive;
 var config bool b_IsRedFogActive_Aliens;
+var config bool b_IsRedFogActive_Advent;
 var config bool b_IsRedFogActive_XCom;
 var config bool b_IsRedFogActive_Robotics;
 var config bool b_UseGaussianEquasion;
@@ -13,6 +14,21 @@ var config array<RedFogFormulatType> FTypeRF;
 function InitListeners()
 {
 	`XCOMHISTORY.RegisterOnNewGameStateDelegate(OnNewGameState_HealthWatcher);
+}
+
+function ObtainOptions()
+{
+	local SecondWave_OptionsDataStore SWDataStore;
+	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();	
+
+	b_IsRedFogActive=SWDataStore.GetValues("b_IsRedFogActive").Bool_Value;
+	b_IsRedFogActive_Aliens=SWDataStore.GetValues("b_IsRedFogActive_Aliens").Bool_Value;
+	b_IsRedFogActive_Advent=SWDataStore.GetValues("b_IsRedFogActive_Advent").Bool_Value;
+	b_IsRedFogActive_XCom=SWDataStore.GetValues("b_IsRedFogActive_XCom").Bool_Value;
+	b_IsRedFogActive_Robotics=SWDataStore.GetValues("b_IsRedFogActive_Robotics").Bool_Value;
+	b_UseGaussianEquasion=SWDataStore.GetValues("b_UseGaussianEquasion").Bool_Value;
+	FTypeRF=SWDataStore.SavedRedFogTypes;
+
 }
 
 static function OnNewGameState_HealthWatcher(XComGameState GameState) //Thank you Amineri and LWS! 
@@ -116,8 +132,18 @@ function AddRedFogAbilityToAllUnits(XComGameState GameState)
 
 	foreach History.IterateByClassType(class'XComGameState_Unit', AbilitySourceUnitState)
 	{
+
+
 		if(AbilitySourceUnitState.GetTeam() != eTeam_XCom && AbilitySourceUnitState.GetTeam() != eTeam_Alien)
 			continue;
+
+		if( (AbilitySourceUnitState.IsSoldier() && !b_IsRedFogActive_XCom) ||
+			(AbilitySourceUnitState.IsAlien()&& !b_IsRedFogActive_Aliens) ||
+			(AbilitySourceUnitState.IsAdvent() && !b_IsRedFogActive_Advent) ||
+			(AbilitySourceUnitState.IsRobotic() && !b_IsRedFogActive_Robotics) || !b_IsRedFogActive)
+			continue;
+
+
 
 		AbilitySourceUnitState = XComGameState_Unit(GameState.CreateStateObject(class'XComGameState_Unit', AbilitySourceUnitState.ObjectID));
 		GameState.AddStateObject(AbilitySourceUnitState);

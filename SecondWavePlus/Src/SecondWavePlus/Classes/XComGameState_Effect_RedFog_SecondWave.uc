@@ -4,6 +4,7 @@ class XComGameState_Effect_RedFog_SecondWave extends SecondWave_GameStateParent 
 
 var bool b_IsRedFogActive;
 var bool b_IsRedFogActive_Aliens;
+var bool b_IsRedFogActive_Advent;
 var bool b_IsRedFogActive_XCom;
 var bool b_IsRedFogActive_Robotics;
 var bool b_UseGaussianEquasion;
@@ -27,6 +28,7 @@ function XComGameState_Effect_RedFog_SecondWave InitRFComponent()
 	Main_RedFog_GameState=SecondWave_RedFog_GameState(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'SecondWave_RedFog_GameState'));
 	b_IsRedFogActive=Main_RedFog_GameState.b_IsRedFogActive;
 	b_IsRedFogActive_Aliens=Main_RedFog_GameState.b_IsRedFogActive_Aliens;
+	b_IsRedFogActive_Advent=Main_RedFog_GameState.b_IsRedFogActive_Advent;
 	b_IsRedFogActive_XCom=Main_RedFog_GameState.b_IsRedFogActive_XCom;
 	b_IsRedFogActive_Robotics=Main_RedFog_GameState.b_IsRedFogActive_Robotics;
 	b_UseGaussianEquasion=Main_RedFog_GameState.b_UseGaussianEquasion;
@@ -128,19 +130,28 @@ function EventListenerReturn UpdateRedFog(Object EventData, Object EventSource, 
 	NewGameState.AddStateObject(UpdatedRFState);
 	UpdatedUnitState = XComGameState_Unit(NewGameState.CreateStateObject(Unit.Class, Unit.ObjectID));
 	NewGameState.AddStateObject(UpdatedUnitState);
-	if(UpdatedUnitState.GetTeam()==eTeam_Alien && !b_IsRedFogActive_Aliens)
+	if(UpdatedUnitState.IsAlien()&& !b_IsRedFogActive_Aliens)
 	{
 		UpdatedRFState.GetRedFogStatChanges(UpdatedUnitState, NewGameState);
+		SubmitGameState(NewGameState);
 		return ELR_NoInterrupt;
 	}
-	if(UpdatedUnitState.GetTeam()==eTeam_XCOM && !b_IsRedFogActive_XCom)
+	if(UpdatedUnitState.IsSoldier() && !b_IsRedFogActive_XCom)
 	{
 		UpdatedRFState.GetRedFogStatChanges(UpdatedUnitState, NewGameState);
+		SubmitGameState(NewGameState);
 		return ELR_NoInterrupt;
 	}
 	if(UpdatedUnitState.IsRobotic() && !b_IsRedFogActive_Robotics)
 	{
 		UpdatedRFState.GetRedFogStatChanges(UpdatedUnitState, NewGameState);
+		SubmitGameState(NewGameState);
+		return ELR_NoInterrupt;
+	}
+	if(UpdatedUnitState.IsAdvent() && !b_IsRedFogActive_Advent)
+	{
+		UpdatedRFState.GetRedFogStatChanges(UpdatedUnitState, NewGameState);
+		SubmitGameState(NewGameState);
 		return ELR_NoInterrupt;
 	}
 	UpdatedRFState.GetRedFogStatChanges(UpdatedUnitState, NewGameState,true);
