@@ -99,6 +99,9 @@ static event InstallNewCampaign(XComGameState StartState)
 	local SecondWave_RedFog_GameState				Main_RedFog_GameState;
 	local SecondWave_UIScreenSettings_GameState		Main_ScreenSettings_GameState;
 
+	local XComGameState_Unit						Unit;
+	local XComGameState_SecondWavePlus_UnitComponent UnitComp;
+
 	Main_CommandersChoice_GameState=SecondWave_CommandersChoice_GameState(StartState.CreateStateObject(class'SecondWave_CommandersChoice_GameState'));
 	Main_HiddenPotential_GameState=SecondWave_HiddenPotential_GameState(StartState.CreateStateObject(class'SecondWave_HiddenPotential_GameState'));
 	Main_Epigenetics_GameState=SecondWave_Epigenetics_GameState(StartState.CreateStateObject(class'SecondWave_Epigenetics_GameState'));
@@ -126,8 +129,8 @@ static event InstallNewCampaign(XComGameState StartState)
 	Main_NewEconomy_GameState.ObtainOptions();
 	Main_ScreenSettings_GameState.ObtainOptions();
 
-	`log("Starting New Campaign",,'Second Wave Plus');
-	CheckForUnitComponents(StartState,Main_HiddenPotential_GameState,Main_NotCreatedEqually_GameState,Main_AbsolutlyCritical_GameState);
+	`log("Starting New Campaign , NCE :"@Main_NotCreatedEqually_GameState.bIs_NCE_Activated,,'Second Wave Plus');
+	CheckForUnitComponents(StartState,Main_HiddenPotential_GameState,Main_NotCreatedEqually_GameState,Main_AbsolutlyCritical_GameState,false);
 	Main_HiddenPotential_GameState.InitListeners();
 	Main_NotCreatedEqually_GameState.InitListeners();
 	Main_RedFog_GameState.InitListeners();	
@@ -153,23 +156,25 @@ static function CheckForUnitComponents(XComGameState NewGameState,SecondWave_Hid
 				NewGameState.AddStateObject(Unit);
 				
 			}
-			else
+			/*else
 			{
 				if(NCEA.bIs_NCE_Activated)NCEA.RandomStats(Unit,NewGameState);
 				if(ACA.bIs_AbsolutlyCritical_Activated)ACA.AddAbsolutlyCriticalToUnit(Unit,NewGameState);
 				if(HidPA.bIs_HiddenPotential_Activated)HidPA.AddHiddenPotentialToUnit(Unit,NewGameState);
-			}
+			}*/
 		}
 	}
 	`log("Starting New Campaign",,'Second Wave Plus');
 	if(Submit)
-			`XCOMHISTORY.AddGameStateToHistory(NewGameState);	
-	foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_Unit',Unit)
 	{
-		if(Unit.IsSoldier())
+		foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_Unit',Unit)
 		{
-			UnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
-			if(UnitComp!=none && UnitComp.OwningObjectId>0) UnitComp.SendEventsAfterInit(NewGameState);
+			if(Unit.IsSoldier())
+			{
+				UnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));
+				if(UnitComp!=none && UnitComp.OwningObjectId>0) UnitComp.SendEventsAfterInit(HidPA,ACA,NCEA,NewGameState);
+			}
 		}
+		`XCOMHISTORY.AddGameStateToHistory(NewGameState);
 	}
 }

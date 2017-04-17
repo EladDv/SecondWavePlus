@@ -129,7 +129,7 @@ simulated function CreateScreen()
 
 simulated public function ContinueButton(UIButton Button)
 {
-	SubmitToHistroy();
+	SubmitToHistory();
 	`XCOMHistory.CleanupPendingGameState(StartState);
 	`SCREENSTACK.Pop(self);
 }
@@ -138,19 +138,19 @@ simulated function OnRemoved()
 {
 	if(!Submitted)
 	{	
-		SubmitToHistroy();
+		SubmitToHistory();
 		`XCOMHistory.CleanupPendingGameState(StartState);
 	}
 	super.OnRemoved();
 }
 
-public function SubmitToHistroy()
+public function SubmitToHistory()
 {
 	local SecondWave_OptionsDataStore SWDataStore;
 
 	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();
 
-	SWDataStore.SavedEpigeneticsItems = SavedNCEItems;
+	SWDataStore.SavedNCEItems = SavedNCEItems;
 	SWDataStore.SavedEpigeneticsItems = SavedEpigeneticsItems;
 	SWDataStore.StatChangesRanges = StatChangesRanges;
 	SWDataStore.SavedRedFogTypes = SavedRedFogTypes;	
@@ -189,6 +189,7 @@ public function SubmitToHistroy()
 	SWDataStore.AddOption("MinimalRegionIncome",0,Main_NewEconomy_GameState.MinimalRegionIncome);
 
 	Submitted=true;
+	SWDataStore.Check();
 /*	StartState.AddStateObject(Main_CommandersChoice_GameState);
 	StartState.AddStateObject(Main_HiddenPotential_GameState);
 	StartState.AddStateObject(Main_Epigenetics_GameState);

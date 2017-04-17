@@ -122,12 +122,7 @@ event OnInit(UIScreen Screen)
 			UIPauseMenu(Screen).List.OnItemClicked=OnListChildClicked;
 			UIPauseMenu(Screen).List.OnItemDoubleClicked=OnListChildClicked;
 			
-		} 
-		for(i=UIPauseMenu(Screen).List.GetItemCount()-4;i<UIPauseMenu(Screen).List.GetItemCount()-1;i++)
-		{
-			UIPauseMenu(Screen).List.MoveItemToBottom(UIPauseMenu(Screen).List.GetItem(i));
 		}
-		SavedSecondWaveObjectPlace=UIPauseMenu(Screen).List.GetItemIndex(SWOB);
 	}
 
 	if(Screen.IsA('UIArmory_Promotion'))
@@ -283,6 +278,7 @@ function EventListenerReturn OnUnitBeginPlay(Object EventData, Object EventSourc
 		ACA.AddAbsolutlyCriticalToUnit(Unit,NewGameState);
 	}	
 	RFA.AddRedFogAbilityToAllUnits(NewGameState);
+	SubmitGameState(NewGameState);
 
 	return ELR_NoInterrupt;
 }
@@ -326,6 +322,7 @@ function EventListenerReturn OnTacticalBeginPlay(Object EventData, Object EventS
 			else
 			{
 				`log("Unit"@Unit.GetFullName() @"Has A Unit Comp",,'Second Wave Plus');
+				`log(NCEA.bIs_NCE_Activated @","@NCEA.NCEStatModifiers.Length);
 				if(NCEA.bIs_NCE_Activated)NCEA.RandomStats(Unit,NewGameState);
 				if(ACA.bIs_AbsolutlyCritical_Activated)ACA.AddAbsolutlyCriticalToUnit(Unit,NewGameState);
 				if(HidPA.bIs_HiddenPotential_Activated)HidPA.AddHiddenPotentialToUnit(Unit,NewGameState);

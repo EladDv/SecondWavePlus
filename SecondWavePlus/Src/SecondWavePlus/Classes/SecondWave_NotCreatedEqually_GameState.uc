@@ -26,6 +26,7 @@ function ObtainOptions()
 {
 	local SecondWave_OptionsDataStore SWDataStore;
 	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();	
+	SWDataStore.Check();
 
 	bIs_NCE_Activated=SWDataStore.GetValues("bIs_NCE_Activated").Bool_Value;
 	bIs_NCERobotic_Activated=SWDataStore.GetValues("bIs_NCERobotic_Activated").Bool_Value;
@@ -34,7 +35,7 @@ function ObtainOptions()
 	TotalPoints_XCom=SWDataStore.GetValues("TotalPoints_XCom").Int_Value;
 	Tolerance_XCom=SWDataStore.GetValues("Tolerance_XCom").Int_Value;
 	NCEStatModifiers=SWDataStore.SavedNCEItems;
-
+	`log("Number of NCE Stat Modifirers: "@NCEStatModifiers.Length);
 }
 
 
@@ -53,7 +54,7 @@ function RandomStats(XComGameState_Unit Unit,Optional XComGameState NewGameState
 
 
 	
-	if(Unit.IsRobotic()||!bIs_NCERobotic_Activated )
+	if(Unit.IsRobotic() && !bIs_NCERobotic_Activated )
 		return;
 	RandActor=`SCREENSTACK.GetCurrentScreen().Spawn(class'SecondWave_RandomizerActor',`SCREENSTACK.GetCurrentScreen());	
 	OldUnitComp=XComGameState_SecondWavePlus_UnitComponent(Unit.FindComponentObject(class'XComGameState_SecondWavePlus_UnitComponent'));

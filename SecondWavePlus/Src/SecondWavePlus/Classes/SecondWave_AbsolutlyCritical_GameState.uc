@@ -19,7 +19,6 @@ function ObtainOptions()
 {
 	local SecondWave_OptionsDataStore SWDataStore;
 	SWDataStore=class'SecondWave_OptionsDataStore'.static.GetInstance();	
-
 	bIs_AbsolutlyCritical_Activated=SWDataStore.GetValues("bIs_AbsolutlyCritical_Activated").Bool_Value;
 	bIs_AbsolutlyCritical_XCOM_Activated=SWDataStore.GetValues("bIs_AbsolutlyCritical_XCOM_Activated").Bool_Value;
 	bIs_AbsolutlyCritical_Advent_Activated=SWDataStore.GetValues("bIs_AbsolutlyCritical_Advent_Activated").Bool_Value;

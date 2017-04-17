@@ -13,15 +13,21 @@ var int LastUpdatedLevel;
 
 var private array<HiddenPotentialLevelChanges> SavedLevelChanges;
 
-public function SendEventsAfterInit(Optional XComGameState NewGameState)
+public function SendEventsAfterInit(SecondWave_HiddenPotential_GameState HPGS,SecondWave_AbsolutlyCritical_GameState ACGS,SecondWave_NotCreatedEqually_GameState NCEGS,Optional XComGameState NewGameState)
 {
 	//local Object Myself;
+	local XComGameState_Unit Unit;
 
+	Unit = XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(self.OwningObjectId));
 	//Myself=self;
 
-	`XEVENTMGR.TriggerEvent('NCE_Start',self,XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(self.OwningObjectId)),NewGameState);	
-	`XEVENTMGR.TriggerEvent('HiddenPotential_Start',self,XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(self.OwningObjectId)),NewGameState);	
-	`XEVENTMGR.TriggerEvent('AbsolutlyCritical_Start',self,XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(self.OwningObjectId)),NewGameState);	
+	//`XEVENTMGR.TriggerEvent('NCE_Start',self,XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(self.OwningObjectId)),NewGameState);	
+	//`XEVENTMGR.TriggerEvent('HiddenPotential_Start',self,XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(self.OwningObjectId)),NewGameState);	
+	//`XEVENTMGR.TriggerEvent('AbsolutlyCritical_Start',self,XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(self.OwningObjectId)),NewGameState);	
+	NCEGS.RandomStats(Unit,NewGameState);
+	HPGS.AddHiddenPotentialToUnit(Unit,NewGameState);
+	ACGS.AddAbsolutlyCriticalToUnit(Unit,NewGameState);
+
 	//`XEVENTMGR.RegisterForEvent(Myself,'UnitRankUp',OnRankUp,ELD_OnStateSubmitted, , ,true);
 }
 /*function EventListenerReturn OnRankUp(Object EventData, Object EventSource, XComGameState NewGameState, Name InEventID)

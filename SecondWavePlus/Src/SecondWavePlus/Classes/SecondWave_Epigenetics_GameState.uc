@@ -50,7 +50,7 @@ function bool RandomEnemyStats(XComGameState_Unit Unit)
 
 	if(Unit.GetMaxStat(eStat_BackpackSize)==10 ||Unit.GetBaseStat(eStat_BackpackSize)==10 ||Unit.GetCurrentStat(eStat_BackpackSize)==10)
 		return false;
-	if(Unit.IsRobotic()||!bIs_EpigeneticsRobotics_Activated)
+	if(Unit.IsRobotic() && !bIs_EpigeneticsRobotics_Activated)
 		return false;
 
 	if(ExcludeUnitFromEpigenetics.Find(string(Unit.GetMyTemplateName()))!=-1)

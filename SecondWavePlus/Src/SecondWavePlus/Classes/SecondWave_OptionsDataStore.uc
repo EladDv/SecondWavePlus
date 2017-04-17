@@ -102,6 +102,15 @@ public static function SecondWave_OptionsDataStore GetInstance()
     return instance;
 }
 
+public function Check()
+{
+	`log("SavedOptions Length:"@SavedOptions.Length );
+	`log("SavedNCEItems Length:"@SavedNCEItems.Length );
+	`log("SavedEpigeneticsItems Length:"@SavedEpigeneticsItems.Length );
+	`log("RedFogChangeRanges Length:"@RedFogChangeRanges.Length );
+	`log("StatChangesRanges Length:"@StatChangesRanges.Length );
+	`log("SavedRedFogTypes Length:"@SavedRedFogTypes.Length );
+}
 
 DefaultProperties
 {

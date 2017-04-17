@@ -60,11 +60,10 @@ static function OnNewGameState_HealthWatcher(XComGameState GameState) //Thank yo
 				RFEComponent = XComGameState_Effect_RedFog_SecondWave(RedFogEffect.FindComponentObject(class'XComGameState_Effect_RedFog_SecondWave'));
 				if(RFEComponent != none)
 				{
+					`log("RED FOG ACTIVE! FOUND COMPONENT",,'Second Wave Plus-Red Fog');
 					UpdatedUnit = XComGameState_Unit(NewGameState.CreateStateObject(class'XComGameState_Unit', HPChangedUnit.ObjectID));
-					NewGameState.AddStateObject(RFEComponent.GetOwner());
 					NewGameState.AddStateObject(UpdatedUnit);
-					RFEComponent.GetRedFogStatChanges(UpdatedUnit, NewGameState,true);
-					`log("RED FOG ACTIVE! APPLIED STATS",,'Second Wave Plus-Red Fog');
+					RFEComponent.GetRedFogStatChanges(UpdatedUnit, NewGameState);
 				}
 			}
 		}
@@ -161,6 +160,6 @@ function AddRedFogAbilityToAllUnits(XComGameState GameState)
 		}
 
 		// trigger event listeners now to update red fog activation for already applied effects
-		EventMgr.TriggerEvent('RedFogActivated', AbilitySourceUnitState, AbilitySourceUnitState, GameState);
+		//EventMgr.TriggerEvent('RedFogActivated', AbilitySourceUnitState, AbilitySourceUnitState, GameState);
 	}
 }

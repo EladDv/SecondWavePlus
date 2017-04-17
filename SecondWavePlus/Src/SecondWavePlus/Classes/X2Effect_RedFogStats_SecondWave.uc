@@ -21,8 +21,8 @@ simulated function AddRedFogStatChange(ECharStatType StatType,XComGameState_Unit
 		return;
 
 	NewChange.StatType = StatType;
-	NewChange.StatAmount =Unit.GetMaxStat(StatType)*GetStatMultiplier(FTypeRF[Found],Unit.GetCurrentStat(eStat_HP),Unit.GetMaxStat(eStat_HP));
-	NewChange.ModOp = InModOp;
+	NewChange.StatAmount = -1.0f + GetStatMultiplier(FTypeRF[Found],Unit.GetCurrentStat(eStat_HP),Unit.GetMaxStat(eStat_HP));
+	NewChange.ModOp = MODOP_Multiplication;
 
 	m_aStatChanges.AddItem(NewChange);
 }
@@ -67,21 +67,21 @@ function float GetStatMultiplier(RedFogFormulatType FTypeLocal, float CurrentHP 
 	switch (FTypeLocal.RedFogCalcType)
 	{
 		case 0:
-			FinalAnswer= Get_A_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
+			FinalAnswer = Get_A_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
 			Break;
 
 		case 1:
-			FinalAnswer= Get_B_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
+			FinalAnswer = Get_B_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
 			Break;
 
 		case 2:
-			FinalAnswer= Get_C_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
+			FinalAnswer = Get_C_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
 			Break;
 		default:
-			FinalAnswer=1.0f;
+			FinalAnswer = 0.0f;
 			Break;	
 	}
-	return (1-FinalAnswer)*-1;	
+	return 1.0f-FinalAnswer;	
 }
 		  
 function float Get_A_Modifier(float CurrentHP , float MaxHP,optional float AimRange)

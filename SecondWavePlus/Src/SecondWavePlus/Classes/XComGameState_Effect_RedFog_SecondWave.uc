@@ -55,19 +55,7 @@ function RegisterForRFEvents(optional XComGameState_Unit TargetUnit)
 	if(SelfObj==none)
 		return;
 	`XEVENTMGR.RegisterForEvent(SelfObj,'RedFogActivated',UpdateRedFog,ELD_OnStateSubmitted,,TargetUnit,true);
-	`XEVENTMGR.RegisterForEvent(SelfObj,'RedFogCleanup',RedFogCleanup,ELD_OnStateSubmitted,,TargetUnit,true);
-	foreach FTypeRF(FTypeLocal)
-	{
-		if(FTypeLocal.StatType==eStat_Offense||FTypeLocal.StatType==eStat_PsiOffense)
-			return;
-
-		PCSRF.Add(1);
-		PCSRF[PCSRF.length-1].StatType=FTypeLocal.StatType;
-		PCSRF[PCSRF.length-1].BaseStat=TargetUnit.GetBaseStat(FTypeLocal.StatType);
-		PCSRF[PCSRF.length-1].MaxStat=TargetUnit.GetMaxStat(FTypeLocal.StatType);
-		PCSRF[PCSRF.length-1].CurrentStat=TargetUnit.GetCurrentStat(FTypeLocal.StatType);
-	}
-	MyUnitRef=TargetUnit.GetReference();
+	//`XEVENTMGR.RegisterForEvent(SelfObj,'RedFogCleanup',RedFogCleanup,ELD_OnStateSubmitted,,TargetUnit,true);
 }
 function EventListenerReturn RedFogCleanup(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
 {
@@ -154,9 +142,34 @@ function EventListenerReturn UpdateRedFog(Object EventData, Object EventSource, 
 		SubmitGameState(NewGameState);
 		return ELR_NoInterrupt;
 	}
-	UpdatedRFState.GetRedFogStatChanges(UpdatedUnitState, NewGameState,true);
+	UpdatedRFState.GetRedFogStatChanges(UpdatedUnitState, NewGameState);
 	SubmitGameState(NewGameState);
 	return ELR_NoInterrupt;
+}
+
+function bool IsRFActive(XComGameState_Unit UpdatedUnitState)
+{
+	if(!b_IsRedFogActive)
+	{
+		return false;
+	}
+	if(UpdatedUnitState.IsAlien()&& !b_IsRedFogActive_Aliens)
+	{
+		return false;
+	}
+	if(UpdatedUnitState.IsSoldier() && !b_IsRedFogActive_XCom)
+	{
+		return false;
+	}
+	if(UpdatedUnitState.IsRobotic() && !b_IsRedFogActive_Robotics)
+	{
+		return false;
+	}
+	if(UpdatedUnitState.IsAdvent() && !b_IsRedFogActive_Advent)
+	{
+		return false;
+	}
+	return true;
 }
 
 function XComGameState_Unit GetTargetUnit(optional XComGameState NewGameState)
@@ -178,7 +191,7 @@ function XComGameState_Unit GetTargetUnit(optional XComGameState NewGameState)
 	return TargetUnit;
 }
 
-function GetRedFogStatChanges(XComGameState_Unit Unit, XComGameState GameState,Optional bool Active=false)
+function GetRedFogStatChanges(XComGameState_Unit Unit, XComGameState GameState)
 {
 	local XComGameState_Effect	OwningEffect;
 	local array<StatChange>		StatChanges;
@@ -189,20 +202,16 @@ function GetRedFogStatChanges(XComGameState_Unit Unit, XComGameState GameState,O
 	OwningEffect = XComGameState_Effect(GameState.CreateStateObject(OwningEffect.Class, OwningEffect.ObjectID));
 	GameState.AddStateObject(OwningEffect);
 	Unit.UnApplyEffectFromStats(OwningEffect, GameState);
-	if(!Active)
+	if(!IsRFActive(Unit))
 		return;
-
 	StatChanges.Length=0;
 	foreach FTypeRF(FTypeLocal)
 	{
 		NewChange.StatType=FTypeLocal.StatType;
-		NewChange.StatAmount=Unit.GetMaxStat(FTypeLocal.StatType)*GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP));
+		NewChange.StatAmount = -1 * Unit.GetBaseStat(FTypeLocal.StatType) * GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetMaxStat(eStat_HP));
 		NewChange.ModOp=MODOP_Addition;
-		`log("Unit: "@Unit.GetFullName() @FTypeLocal.StatType $": " $Unit.GetMaxStat(FTypeLocal.StatType)*(1+GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP))));
-
-		if(FTypeLocal.StatType==eStat_Offense || FTypeLocal.StatType==eStat_PsiOffense)StatChanges.AddItem(NewChange);
-		else
-			Unit.SetCurrentStat(FTypeLocal.StatType,Unit.GetMaxStat(FTypeLocal.StatType)*(1+GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetBaseStat(eStat_HP))));
+		//`log("Unit: "@Unit.GetFullName() @FTypeLocal.StatType $": " $Unit.GetMaxStat(FTypeLocal.StatType)*(	NewChange.StatAmount = 1.0f - GetStatMultiplier(FTypeLocal,Unit.GetCurrentStat(eStat_HP),Unit.GetMaxStat(eStat_HP))));
+		StatChanges.AddItem(NewChange);
 	}
 	OwningEffect.StatChanges = StatChanges;
 	Unit.ApplyEffectToStats(OwningEffect, GameState);
@@ -213,29 +222,27 @@ function float GetStatMultiplier(RedFogFormulatType FTypeLocal, float CurrentHP 
 {
 	local float FinalAnswer;
 
-	if(CurrentHP>=MaxHP)
-		return 1.0f;
-	if(CurrentHP<=0)
-		return 0.000001f;
-
 	switch (FTypeLocal.RedFogCalcType)
 	{
 		case 0:
-			FinalAnswer= Get_A_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
+			FinalAnswer = Get_A_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
 			Break;
 
 		case 1:
-			FinalAnswer= Get_B_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
+			FinalAnswer = Get_B_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
 			Break;
 
 		case 2:
-			FinalAnswer= Get_C_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
+			FinalAnswer = Get_C_Modifier(CurrentHP,MaxHP,FTypeLocal.Range);
 			Break;
 		default:
-			FinalAnswer=1.0f;
+			FinalAnswer = 0.0f;
 			Break;	
 	}
-	return (1-FinalAnswer)*-1;	
+	if(CurrentHP<=0 || CurrentHP == MaxHP)
+		FinalAnswer = 1.0f;
+
+	return 1.0f-FinalAnswer;	
 }
 		  
 function float Get_A_Modifier(float CurrentHP , float MaxHP,optional float AimRange)
