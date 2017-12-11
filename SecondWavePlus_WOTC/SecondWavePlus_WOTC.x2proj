@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Default" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Guid>43152d89-86e7-492a-ba84-efd54dc4dcc5</Guid>
+    <Name>Second_Wave_Plus_WOTC</Name>
+    <Description>Description of My XCOM 2 Mod.</Description>
+    <SteamPublishID>0</SteamPublishID>
+    <AssemblyName>SecondWavePlus_WOTC</AssemblyName>
+    <RootNamespace>SecondWavePlus_WOTC</RootNamespace>
+    <ProjectGuid>{ac147cae-7201-41e6-ac5d-1c408b158c9b}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Config\" />
+    <Folder Include="Localization\" />
+    <Folder Include="Src\" />
+    <Folder Include="Src\Second_Wave_Plus_WOTC\" />
+    <Folder Include="Src\Second_Wave_Plus_WOTC\Classes\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Config\XComSecondWavePlus_Settings.ini">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Localization\Second_Wave_Plus_WOTC.int">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ReadMe.txt" />
+    <Content Include="ModPreview.jpg" />
+    <Content Include="Config\XComEditor.ini" />
+    <Content Include="Config\XComEngine.ini" />
+    <Content Include="Config\XComGame.ini" />
+    <Content Include="Localization\XComGame.int" />
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_AbsolutlyCritical_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_CampaignSettings.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_CommandersChoice_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_Epigenetics_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_GameStateParent.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_HiddenPotential_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_NewEconomy_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_NotCreatedEqually_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_OptionsDataStore.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_RandomizerActor.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_RedFog_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_UIListItem_NCEStatChangesUpdate.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\SecondWave_UIScreenSettings_GameState.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\UIScreenListener_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\UIScreen_SecondWaveOptions.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\X2Ability_RedFog_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\X2DownloadableContentInfo_Second_Wave_Plus_WOTC.uc" />
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\X2Effect_RedFogStats_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\X2Effect_RedFog_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\XComGameState_Effect_RedFog_SecondWave.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\Second_Wave_Plus_WOTC\Classes\XComGameState_SecondWavePlus_UnitComponent.uc">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildLocalExtensionPath)\XCOM2.targets" />
+</Project>
